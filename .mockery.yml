@@ -1,0 +1,15 @@
+all: false
+filename: '{{.Mock}}{{.InterfaceName}}.go'
+packages:
+  broadcom.com/vertex-ingestor/internal/ai:
+    config:
+      all: true
+  broadcom.com/vertex-ingestor/internal/store:
+    config:
+      all: true
+  broadcom.com/vertex-ingestor/internal/stages:
+    config:
+      all: true
+  broadcom.com/vertex-ingestor/internal/datastore:
+    config:
+      all: true
