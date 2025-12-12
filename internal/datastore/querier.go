@@ -9,8 +9,12 @@ import (
 )
 
 type Querier interface {
-	CheckVersion(ctx context.Context) (interface{}, error)
-	GetChunk(ctx context.Context, id int64) (Chunk, error)
+	GetDocument(ctx context.Context, id int64) (Document, error)
+	GetEmbeddingWithDocument(ctx context.Context, rowid int64) (GetEmbeddingWithDocumentRow, error)
+	InsertDocument(ctx context.Context, document *string) (Document, error)
+	InsertEmbedding(ctx context.Context, embedding []byte) (int64, error)
+	ListDocuments(ctx context.Context) ([]Document, error)
+	SearchEmbedding(ctx context.Context, arg SearchEmbeddingParams) ([]SearchEmbeddingRow, error)
 }
 
 var _ Querier = (*Queries)(nil)

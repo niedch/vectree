@@ -4,7 +4,14 @@
 
 package datastore
 
-type Chunk struct {
-	ID    int64
-	Chunk *string
+type Document struct {
+	ID       int64
+	Document *string
+}
+
+type Embedding struct {
+	Rowid      int64
+	DocumentID int64
+	Embedding  []byte
+	Distance   float64
 }

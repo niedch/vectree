@@ -2,10 +2,13 @@ version: "2"
 sql:
   - engine: "sqlite"
     queries: "sql/query.sql"
-    schema: "sql/migrations/"
+    schema: "sql/migrations"
     gen:
       go:
         package: "datastore"
         out: "internal/datastore"
         emit_interface: true
         emit_pointers_for_null_types: true
+        overrides:
+          - column: "embeddings.distance"
+            go_type: "float64"
