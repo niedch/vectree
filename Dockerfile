@@ -1,0 +1,58 @@
+########## Stage 1: Build
+FROM golang:1.24 AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+# build-essential is included in the base image, but we need libsqlite3-dev
+RUN apt-get update && apt-get install -y libsqlite3-dev
+
+# Copy go.mod and go.sum files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy the source code
+COPY . .
+
+# Build the application
+# CGO_ENABLED=1 is required for sqlite3 dependencies
+RUN CGO_ENABLED=1 GOOS=linux go build -o connectall-doc-rag main.go
+
+
+########## Stage 2: Ingest into SQLite DB
+FROM debian:bookworm-slim AS ingester
+
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y ca-certificates libsqlite3-0 && rm -rf /var/lib/apt/lists/*
+
+# Copy the binary from the builder stage
+COPY --from=builder /app/connectall-doc-rag .
+
+# Copy configuration file
+COPY config.toml .
+
+# Copy configuration file
+COPY test_data ./test_data
+
+ARG GEMINI_API_KEY=OVERRIDE
+
+RUN ./connectall-doc-rag ingest
+
+
+########## Stage 3: Run server
+FROM debian:bookworm-slim
+
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y ca-certificates libsqlite3-0 && rm -rf /var/lib/apt/lists/*
+
+# Copy the binary from the builder stage
+COPY --from=ingester /app/connectall-doc-rag .
+COPY --from=ingester /app/rag-vec.db .
+
+ENTRYPOINT ["./connectall-doc-rag", "mcp"]

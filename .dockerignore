@@ -1,0 +1,19 @@
+# Git
+.git
+.gitignore
+
+# Go build cache and modules
+__debug_bin
+*.test
+*.out
+
+# Local development and temporary files
+tmp/
+temp/
+.idea/
+.vscode/
+.DS_Store
+
+# Executables
+connectall-doc-rag
+Dockerfile
