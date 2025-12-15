@@ -35,10 +35,8 @@ test:
 deps:
 	$(GOCMD) mod tidy
 	$(GOCMD) install github.com/vektra/mockery/v3@v3.6.1
-	$(GOCMD) install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 generate:
-	sqlc generate
 	mockery
 
 # Run benchmarks

@@ -4,6 +4,7 @@ go 1.24.2
 
 require (
 	github.com/asg017/sqlite-vec-go-bindings v0.1.6
+	github.com/jmoiron/sqlx v1.4.0
 	github.com/knadh/koanf/parsers/toml v0.1.0
 	github.com/knadh/koanf/providers/confmap v1.0.0
 	github.com/knadh/koanf/providers/env v1.1.0

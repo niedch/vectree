@@ -8,27 +8,27 @@ CREATE TABLE IF NOT EXISTS document (
   document TEXT
 );
 
--- Virtual table for vector embeddings using sqlite-vec
--- vec0 only supports a single embedding column
--- rowid is automatically created by SQLite for all tables
-CREATE VIRTUAL TABLE IF NOT EXISTS embeddings USING vec0(
-  embedding FLOAT[768]
+CREATE VIRTUAL TABLE IF NOT EXISTS embedding USING vec0(
+  embedding FLOAT[432]
 );
 
--- Mapping table to link embeddings to documents
--- The rowid from embeddings table will be stored here
-CREATE TABLE IF NOT EXISTS embeddings (
-  rowid INTEGER PRIMARY KEY,
+-- Mapping table to link documents to embeddings
+CREATE TABLE IF NOT EXISTS document_embedding (
   document_id INTEGER NOT NULL,
-  embedding BLOB,
-  distance REAL,
-  FOREIGN KEY (document_id) REFERENCES document(id)
+  embedding_rowid INTEGER NOT NULL,
+  PRIMARY KEY (document_id, embedding_rowid),
+  FOREIGN KEY (document_id) REFERENCES document(id) ON DELETE CASCADE
 );
+
+-- Index for faster lookups by embedding_rowid
+CREATE INDEX IF NOT EXISTS idx_embedding_rowid ON document_embedding(embedding_rowid);
 
 -- +goose Down
 -- +goose StatementBegin
 SELECT 'down SQL query';
 -- +goose StatementEnd
 
-DROP TABLE IF EXISTS embeddings;
+DROP INDEX IF EXISTS idx_embedding_rowid;
+DROP TABLE IF EXISTS document_embedding;
+DROP TABLE IF EXISTS embedding;
 DROP TABLE IF EXISTS document;

@@ -40,7 +40,7 @@ func (e Embedder) Run(ctx context.Context, in <-chan []string) <-chan *EmbedderO
 			log.Println("Generating Embeddings for batch", len(batch))
 			embs, err := e.Model.GenerateEmbeddings(ctx, batch)
 			if err != nil {
-				log.Fatalln(err)
+				log.Println(err)
 				continue
 			}
 

@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"context"
+	"log"
+
 	"broadcom.com/vertex-ingestor/internal/conf"
 	"broadcom.com/vertex-ingestor/internal/datastore"
 	"github.com/spf13/cobra"
@@ -19,10 +22,29 @@ This command will:
 	Run: func(cmd *cobra.Command, args []string) {
 		config := conf.Load()
 
-		_, err := datastore.OpenConnection(config)
+		ctx := context.Background()
+		db, err := datastore.OpenConnection(config)
 		if err != nil {
 			panic(err)
 		}
+		defer db.Close()
+
+		var vecVersion string
+		err = db.QueryRow("select vec_version()").Scan(&vecVersion)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("vec_version=%s\n", vecVersion)
+
+		document := datastore.Document{Document: "Test Insert"}
+		embedding := datastore.Embedding{Embedding: []float32{0.1, 0.2, 0.3}}
+
+		ds := &datastore.SqliteDatastore{Db: db}
+		docId, err := ds.InsertDocument(ctx, document, embedding)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("Inserted document with ID: %d\n", docId)
 	},
 }
 
