@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"broadcom.com/vertex-ingestor/internal/ai"
+	"broadcom.com/vertex-ingestor/internal/conf"
+	"broadcom.com/vertex-ingestor/internal/datastore"
 	"broadcom.com/vertex-ingestor/internal/pipeline"
 	"broadcom.com/vertex-ingestor/internal/stages"
 	"broadcom.com/vertex-ingestor/internal/store"
@@ -15,11 +17,18 @@ var ingestCmd = &cobra.Command{
 	Short: "Ingests documents, creates vector embeddings, and stores them in the vector database.",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
+		config := conf.Load()
 
 		embedder := ai.NewGeminiEmbedder("embedding-001")
 		embedder.Initialize(ctx)
 
-		store := store.NewMockBenchmarkStore()
+		db, err := datastore.OpenConnection(config)
+		if err != nil {
+			panic(err)
+		}
+
+		ds := datastore.NewSqliteDatastore(db)
+		store := store.NewSqliteStore(ds)
 
 		p1 := pipeline.New(stages.NewDirLoader("."))
 		p2 := pipeline.AddStage(p1, stages.NewIndexFileFilter())

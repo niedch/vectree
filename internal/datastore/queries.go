@@ -44,13 +44,17 @@ type Querier interface {
 }
 
 type SqliteDatastore struct {
-	Db *sqlx.DB
+	db *sqlx.DB
+}
+
+func NewSqliteDatastore(db *sqlx.DB) *SqliteDatastore {
+	return &SqliteDatastore{db: db}
 }
 
 // InsertDocument inserts a document with its embedding and creates the mapping
 // Returns the document ID
 func (ds *SqliteDatastore) InsertDocument(ctx context.Context, document Document, embedding Embedding) (int64, error) {
-	tx, err := ds.Db.BeginTx(ctx, nil)
+	tx, err := ds.db.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -101,7 +105,7 @@ func (ds *SqliteDatastore) InsertDocument(ctx context.Context, document Document
 // GetDocument retrieves a document by ID
 func (ds *SqliteDatastore) GetDocument(ctx context.Context, id int) (*Document, error) {
 	var doc Document
-	err := ds.Db.GetContext(ctx, &doc, "SELECT id, document FROM document WHERE id = ?", id)
+	err := ds.db.GetContext(ctx, &doc, "SELECT id, document FROM document WHERE id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("document not found: %d", id)
@@ -128,7 +132,7 @@ func (ds *SqliteDatastore) GetDocumentWithEmbedding(ctx context.Context, id int)
 		EmbeddingRowid int64  `db:"embedding_rowid"`
 	}
 
-	err := ds.Db.GetContext(ctx, &result, query, id)
+	err := ds.db.GetContext(ctx, &result, query, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("document not found: %d", id)
@@ -161,7 +165,7 @@ func (ds *SqliteDatastore) GetEmbeddingsForDocument(ctx context.Context, documen
 		WHERE de.document_id = ?
 	`
 
-	rows, err := ds.Db.QueryContext(ctx, query, documentId)
+	rows, err := ds.db.QueryContext(ctx, query, documentId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query embeddings: %w", err)
 	}
@@ -198,13 +202,13 @@ func (ds *SqliteDatastore) GetEmbeddingsForDocument(ctx context.Context, documen
 func (ds *SqliteDatastore) DeleteDocument(ctx context.Context, id int) error {
 	// Get embedding rowids before deleting the mapping
 	var embeddingRowids []int64
-	err := ds.Db.SelectContext(ctx, &embeddingRowids,
+	err := ds.db.SelectContext(ctx, &embeddingRowids,
 		"SELECT embedding_rowid FROM document_embedding WHERE document_id = ?", id)
 	if err != nil {
 		return fmt.Errorf("failed to get embedding rowids: %w", err)
 	}
 
-	tx, err := ds.Db.BeginTx(ctx, nil)
+	tx, err := ds.db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -248,7 +252,7 @@ func (ds *SqliteDatastore) SearchSimilarEmbeddings(ctx context.Context, queryVec
 		return nil, fmt.Errorf("failed to serialize query vector: %w", err)
 	}
 
-	rows, err := ds.Db.QueryContext(ctx, query, v, limit)
+	rows, err := ds.db.QueryContext(ctx, query, v, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search embeddings: %w", err)
 	}

@@ -39,7 +39,7 @@ This command will:
 		document := datastore.Document{Document: "Test Insert"}
 		embedding := datastore.Embedding{Embedding: []float32{0.1, 0.2, 0.3}}
 
-		ds := &datastore.SqliteDatastore{Db: db}
+		ds := datastore.NewSqliteDatastore(db)
 		docId, err := ds.InsertDocument(ctx, document, embedding)
 		if err != nil {
 			log.Fatal(err)
