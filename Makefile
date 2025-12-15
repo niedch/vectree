@@ -47,4 +47,8 @@ benchmark:
 memprofile:
 	$(GOCMD) tool pprof -http=:8080 mem.out 
 
+# Run benchmarks
+docker-build:
+	docker build --build-arg GEMINI_API_KEY=${GEMINI_API_KEY} -t connectall-doc-rag .
+
 .PHONY: all build run clean test deps ingest benchmark

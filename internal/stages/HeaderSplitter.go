@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+var (
+	re = regexp.MustCompile(`(?m)^#+\s.*$`)
+)
+
 // HeaderSplitter splits text based on markdown headers.
 type HeaderSplitter struct{}
 
@@ -21,9 +25,6 @@ func (s *HeaderSplitter) Run(ctx context.Context, in <-chan string) <-chan strin
 
 	go func() {
 		defer close(out)
-
-		// Regex to find markdown headers (##, ###, etc.)
-		re := regexp.MustCompile(`(?m)^#+\s.*$`)
 
 		for content := range in {
 			if content == "" {
@@ -68,4 +69,3 @@ func (s *HeaderSplitter) Run(ctx context.Context, in <-chan string) <-chan strin
 
 	return out
 }
-
