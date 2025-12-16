@@ -2,6 +2,7 @@ package stages
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"broadcom.com/vertex-ingestor/internal/store"
@@ -28,26 +29,44 @@ func (s *Store) Run(ctx context.Context, in <-chan []*EmbedderOut) <-chan any {
 		}
 
 		count := 0
+		var size uint64 = 0
+
 		for emb := range in {
 			embedderOut := emb
 
-			chunks := convertEmbedderOutToChunks(embedderOut)
-			result_Count, err := s.datastore.InsertChunks(ctx, chunks)
+			batchSize, chunks := convertEmbedderOutToChunks(embedderOut)
+			resultCount, err := s.datastore.InsertChunks(ctx, chunks)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			count += result_Count
+			size += uint64(batchSize)
+			count += resultCount
 		}
 
-		log.Println("Stored", count, "embeddings")
+		log.Printf("Stored %d embeddings\n", count)
+		log.Printf("BatchSize: %s\n", formatBytes(size))
 	}()
 
 	return out
 }
 
-func convertEmbedderOutToChunks(anyArr []*EmbedderOut) []store.Chunk {
+func formatBytes(bytes uint64) string {
+	const unit = 1024
+	if bytes < unit {
+		return fmt.Sprintf("%d B", bytes)
+	}
+	div, exp := uint64(unit), 0
+	for n := bytes / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.2f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
+}
+
+func convertEmbedderOutToChunks(anyArr []*EmbedderOut) (int, []store.Chunk) {
 	chunks := make([]store.Chunk, len(anyArr))
+	batchSize := 0
 
 	for idx, embedding := range anyArr {
 		embedderOut := embedding
@@ -56,11 +75,13 @@ func convertEmbedderOutToChunks(anyArr []*EmbedderOut) []store.Chunk {
 			continue
 		}
 
+		batchSize += len(embedderOut.Chunk)
+
 		chunks[idx] = store.Chunk{
 			Text:   embedderOut.Chunk,
 			Vector: embedderOut.Vector,
 		}
 	}
 
-	return chunks
+	return batchSize, chunks
 }

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"sync"
 
 	"broadcom.com/vertex-ingestor/internal/ai"
 	"broadcom.com/vertex-ingestor/internal/conf"
@@ -34,6 +35,40 @@ var ingestCmd = &cobra.Command{
 		ds := datastore.NewSqliteDatastore(db)
 		store := store.NewSqliteStore(ds)
 
+		var wg sync.WaitGroup
+
+		RunDocumentationPipelineAsync(ctx, &wg, embedder, store)
+		RunMarkdownPipelineAsync(ctx, &wg, embedder, store)
+
+		wg.Wait()
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(ingestCmd)
+}
+
+func RunMarkdownPipelineAsync(ctx context.Context, wg *sync.WaitGroup, embedder ai.EmbeddingModel, store store.Datastore) {
+	wg.Add(1)
+
+	go func() {
+		p1 := pipeline.New(stages.NewDirLoader("../connectall"))
+		p2 := pipeline.AddStage(p1, stages.NewNodeModulesFilter())
+		p3 := pipeline.AddStage(p2, stages.NewFileLoader())
+		p4 := pipeline.AddStage(p3, stages.NewHeaderSplitter())
+		p5 := pipeline.AddStage(p4, stages.NewBatcher[string](64))
+		p6 := pipeline.AddStage(p5, stages.NewEmbedder(embedder, 8))
+		p7 := pipeline.AddStage(p6, stages.NewBatcher[*stages.EmbedderOut](64))
+		p8 := pipeline.AddStage(p7, stages.NewStore(store))
+		p8.Run(ctx)
+
+		wg.Done()
+	}()
+}
+
+func RunDocumentationPipelineAsync(ctx context.Context, wg *sync.WaitGroup, embedder ai.EmbeddingModel, store store.Datastore) {
+	wg.Add(1)
+	go func() {
 		p1 := pipeline.New(stages.NewIndexLoader(TOC_URL))
 		p2 := pipeline.AddStage(p1, stages.NewDebugStage())
 		p3 := pipeline.AddStage(p2, stages.NewContentLoader(10))
@@ -43,18 +78,6 @@ var ingestCmd = &cobra.Command{
 		p7 := pipeline.AddStage(p6, stages.NewStore(store))
 		p7.Run(ctx)
 
-		// p1 := pipeline.New(stages.NewDirLoader("."))
-		// p2 := pipeline.AddStage(p1, stages.NewIndexFileFilter())
-		// p3 := pipeline.AddStage(p2, stages.NewFileLoader())
-		// p4 := pipeline.AddStage(p3, stages.NewHeaderSplitter())
-		// p5 := pipeline.AddStage(p4, stages.NewBatcher[string](32))
-		// p6 := pipeline.AddStage(p5, stages.NewEmbedder(embedder, 4))
-		// p7 := pipeline.AddStage(p6, stages.NewBatcher[*stages.EmbedderOut](16))
-		// p8 := pipeline.AddStage(p7, stages.NewStore(store))
-		// p8.Run(ctx)
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(ingestCmd)
+		wg.Done()
+	}()
 }
