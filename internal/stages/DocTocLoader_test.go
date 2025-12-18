@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIndexLoader(t *testing.T) {
+func TestDocTocLoader(t *testing.T) {
 	// Create a test JSON TOC response
 	testTOCJSON := `[
 		{"title":"Page 1","link":"/page1","scope":"local","children":[]},
@@ -25,8 +25,8 @@ func TestIndexLoader(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Create the IndexLoader with the TOC URL directly
-	loader := NewIndexLoader(server.URL)
+	// Create the DocTocLoader with the TOC URL directly
+	loader := NewDocTocLoader(server.URL)
 
 	// Run the loader
 	ctx := context.Background()
@@ -45,7 +45,7 @@ func TestIndexLoader(t *testing.T) {
 	assert.Contains(t, links, "https://example.com/page3")
 }
 
-func TestIndexLoader_EmptyTOC(t *testing.T) {
+func TestDocTocLoader_EmptyTOC(t *testing.T) {
 	testTOCJSON := `[]`
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +55,7 @@ func TestIndexLoader_EmptyTOC(t *testing.T) {
 	}))
 	defer server.Close()
 
-	loader := NewIndexLoader(server.URL)
+	loader := NewDocTocLoader(server.URL)
 	ctx := context.Background()
 	out := loader.Run(ctx, nil)
 
@@ -67,7 +67,7 @@ func TestIndexLoader_EmptyTOC(t *testing.T) {
 	assert.Len(t, links, 0, "Should return no links when TOC is empty")
 }
 
-func TestIndexLoader_NestedChildren(t *testing.T) {
+func TestDocTocLoader_NestedChildren(t *testing.T) {
 	testTOCJSON := `[
 		{
 			"title":"Section 1",
@@ -88,7 +88,7 @@ func TestIndexLoader_NestedChildren(t *testing.T) {
 	}))
 	defer server.Close()
 
-	loader := NewIndexLoader(server.URL)
+	loader := NewDocTocLoader(server.URL)
 	ctx := context.Background()
 	out := loader.Run(ctx, nil)
 
@@ -104,7 +104,7 @@ func TestIndexLoader_NestedChildren(t *testing.T) {
 	assert.Contains(t, links, server.URL+"/section2")
 }
 
-func TestIndexLoader_DeeplyNestedChildren(t *testing.T) {
+func TestDocTocLoader_DeeplyNestedChildren(t *testing.T) {
 	testTOCJSON := `[
 		{
 			"title":"Level 1",
@@ -135,7 +135,7 @@ func TestIndexLoader_DeeplyNestedChildren(t *testing.T) {
 	}))
 	defer server.Close()
 
-	loader := NewIndexLoader(server.URL)
+	loader := NewDocTocLoader(server.URL)
 	ctx := context.Background()
 	out := loader.Run(ctx, nil)
 
@@ -150,7 +150,7 @@ func TestIndexLoader_DeeplyNestedChildren(t *testing.T) {
 	assert.Contains(t, links, server.URL+"/level3")
 }
 
-func TestIndexLoader_ContextCancellation(t *testing.T) {
+func TestDocTocLoader_ContextCancellation(t *testing.T) {
 	testTOCJSON := `[
 		{"title":"Link 1","link":"/link1","scope":"local","children":[]},
 		{"title":"Link 2","link":"/link2","scope":"local","children":[]}
@@ -163,7 +163,7 @@ func TestIndexLoader_ContextCancellation(t *testing.T) {
 	}))
 	defer server.Close()
 
-	loader := NewIndexLoader(server.URL)
+	loader := NewDocTocLoader(server.URL)
 	ctx, cancel := context.WithCancel(context.Background())
 	
 	out := loader.Run(ctx, nil)
@@ -181,7 +181,7 @@ func TestIndexLoader_ContextCancellation(t *testing.T) {
 	assert.True(t, len(links) <= 2, "Should stop processing when context is cancelled")
 }
 
-func TestIndexLoader_InvalidJSON(t *testing.T) {
+func TestDocTocLoader_InvalidJSON(t *testing.T) {
 	testInvalidJSON := `{invalid json`
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -191,7 +191,7 @@ func TestIndexLoader_InvalidJSON(t *testing.T) {
 	}))
 	defer server.Close()
 
-	loader := NewIndexLoader(server.URL)
+	loader := NewDocTocLoader(server.URL)
 	ctx := context.Background()
 	out := loader.Run(ctx, nil)
 
@@ -203,13 +203,13 @@ func TestIndexLoader_InvalidJSON(t *testing.T) {
 	assert.Len(t, links, 0, "Should return no links when JSON is invalid")
 }
 
-func TestIndexLoader_HTTPError(t *testing.T) {
+func TestDocTocLoader_HTTPError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
 	defer server.Close()
 
-	loader := NewIndexLoader(server.URL)
+	loader := NewDocTocLoader(server.URL)
 	ctx := context.Background()
 	out := loader.Run(ctx, nil)
 

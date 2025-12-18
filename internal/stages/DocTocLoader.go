@@ -9,12 +9,12 @@ import (
 	"strings"
 )
 
-type IndexLoader struct {
+type DocTocLoader struct {
 	url string
 }
 
-func NewIndexLoader(url string) *IndexLoader {
-	return &IndexLoader{
+func NewDocTocLoader(url string) *DocTocLoader {
+	return &DocTocLoader{
 		url: url,
 	}
 }
@@ -27,7 +27,7 @@ type TOCEntry struct {
 	Children []TOCEntry `json:"children"`
 }
 
-func (l IndexLoader) Run(ctx context.Context, _ <-chan any) <-chan string {
+func (l DocTocLoader) Run(ctx context.Context, _ <-chan any) <-chan string {
 	out := make(chan string)
 
 	go func() {
@@ -85,7 +85,7 @@ func (l IndexLoader) Run(ctx context.Context, _ <-chan any) <-chan string {
 	return out
 }
 
-func (l IndexLoader) getBaseURL() (string, error) {
+func (l DocTocLoader) getBaseURL() (string, error) {
 	u, err := url.Parse(l.url)
 	if err != nil {
 		return "", err
