@@ -4,14 +4,38 @@ import (
 	"log"
 
 	"github.com/knadh/koanf/parsers/toml"
-	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/providers/structs"
 	"github.com/knadh/koanf/v2"
 )
 
 type Config struct {
-	DATABASE_NAME string `koanf:"DATABASE_NAME"`
+	Database       Database  `koanf:"database"`
+	Pipeline       Pipeline  `koanf:"pipeline"`
+	AI             AI        `koanf:"ai"`
+	Retrieval      Retrieval `koanf:"retrieval"`
+	GEMINI_API_KEY string    `koanf:"GEMINI_API_KEY"`
+}
+
+type Database struct {
+	ConnectionString string `koanf:"connection_string"`
+}
+
+type Pipeline struct {
+	ConnectallPath    string `koanf:"connectall_path"`
+	EmbedderBatchSize int    `koanf:"embedder_batch_size"`
+	EmbedderWorkers   int    `koanf:"embedder_workers"`
+	StoreBatchSize    int    `koanf:"store_batch_size"`
+	DocuLoaderWorkers int    `koanf:"docu_loader_workers"`
+}
+
+type AI struct {
+	EmbeddingModel string `koanf:"embedding_model"`
+}
+
+type Retrieval struct {
+	SimilarityResults int `koanf:"similarity_results"`
 }
 
 func Load() *Config {
@@ -31,8 +55,20 @@ func Load() *Config {
 }
 
 func loadDefaults(k *koanf.Koanf) {
-	k.Load(confmap.Provider(map[string]any{
-		"DATABASE_NAME": "rag-vec.db",
+	k.Load(structs.Provider(Config{
+		AI: AI{
+			EmbeddingModel: "embedding-001",
+		},
+		Pipeline: Pipeline{
+			ConnectallPath:    "../connectall",
+			EmbedderBatchSize: 64,
+			EmbedderWorkers:   8,
+			StoreBatchSize:    8,
+			DocuLoaderWorkers: 10,
+		},
+		Database: Database{
+			ConnectionString: "kownledgebase.db?cache=shared&mode=rw",
+		},
 	}, "."), nil)
 }
 
@@ -42,6 +78,6 @@ func loadEnvironment(k *koanf.Koanf) {
 
 func loadLocalFile(k *koanf.Koanf) {
 	if err := k.Load(file.Provider("config.toml"), toml.Parser()); err != nil {
-		// Ignore error
+		log.Println("Cannot load local config file", err)
 	}
 }

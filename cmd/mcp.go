@@ -1,6 +1,3 @@
-/*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -41,7 +38,7 @@ to quickly create a Cobra application.`,
 		}
 		ds := datastore.NewSqliteDatastore(db)
 
-		model := ai.NewGeminiEmbedder("embedding-001")
+		model := ai.NewGeminiEmbedder(config.GEMINI_API_KEY, config.AI.EmbeddingModel)
 
 		// Add a calculator tool
 		researchTool := mcp.NewTool("search-documentation",
@@ -65,7 +62,7 @@ to quickly create a Cobra application.`,
 				return mcp.NewToolResultError(err.Error()), nil
 			}
 
-			docs, err := ds.SearchSimilarEmbeddings(ctx, emb, 3)
+			docs, err := ds.SearchSimilarEmbeddings(ctx, emb, config.Retrieval.SimilarityResults)
 			if err != nil {
 				return mcp.NewToolResultError(err.Error()), nil
 			}

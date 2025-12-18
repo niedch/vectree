@@ -53,6 +53,6 @@ RUN apt-get update && apt-get install -y ca-certificates libsqlite3-0 && rm -rf 
 
 # Copy the binary from the builder stage
 COPY --from=ingester /app/connectall-doc-rag .
-COPY --from=ingester /app/rag-vec.db .
+COPY --from=ingester /app/kownledgebase.db .
 
 ENTRYPOINT ["./connectall-doc-rag", "mcp"]

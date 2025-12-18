@@ -6,7 +6,7 @@ GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
-BINARY_NAME=rag-vec-search
+BINARY_NAME=connectall-doc-rag
 BINARY_UNIX=$(BINARY_NAME)
 
 # All target is the default target

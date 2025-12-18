@@ -3,7 +3,6 @@ package ai
 import (
 	"fmt"
 	"log"
-	"os"
 	"context"
 
 	"google.golang.org/genai"
@@ -15,9 +14,7 @@ type GeminiEmbedder struct {
 	Client         *genai.Client
 }
 
-func NewGeminiEmbedder(embeddingModel string) *GeminiEmbedder {
-	apikey := os.Getenv("GEMINI_API_KEY")
-
+func NewGeminiEmbedder(apikey string, embeddingModel string) *GeminiEmbedder {
 	return &GeminiEmbedder{
 		embeddingModel: embeddingModel,
 		apikey:         apikey,
