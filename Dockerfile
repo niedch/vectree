@@ -45,7 +45,6 @@ RUN if [ -n "$GIT_TOKEN" ]; then \
 
 ARG GEMINI_API_KEY=OVERRIDE
 
-RUN ls -a ../
 RUN ./connectall-doc-rag ingest
 
 
