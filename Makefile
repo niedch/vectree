@@ -47,8 +47,14 @@ benchmark:
 memprofile:
 	$(GOCMD) tool pprof -http=:8080 mem.out 
 
-# Run benchmarks
+# Docker build with optional git repositories
+# Usage examples:
+#   make docker-build
+#   Uses GITHUB_API_KEY and GEMINI_API_KEY from environment
 docker-build:
-	docker build --build-arg GEMINI_API_KEY=${GEMINI_API_KEY} -t connectall-doc-rag .
+	docker build \
+		--build-arg GIT_TOKEN=${GITHUB_ENTERPRISE_API_KEY} \
+		--build-arg GEMINI_API_KEY=${GEMINI_API_KEY} \
+		-t connectall-doc-rag .
 
-.PHONY: all build run clean test deps ingest benchmark
+.PHONY: all build run clean test deps ingest benchmark docker-build

@@ -5,7 +5,7 @@ connection_string = "kownledgebase.db?cache=shared&mode=rw"
 connectall_path = "../connectall"
 embedder_batch_size = 64
 embedder_workers = 8
-store_batch_size = 8
+store_batch_size = 64
 docu_loader_workers = 10
 
 [ai]

@@ -94,6 +94,7 @@ func RunMarkdownPipelineAsync(ctx context.Context, wg *sync.WaitGroup, config *c
 
 func RunDocumentationPipelineAsync(ctx context.Context, wg *sync.WaitGroup, config *conf.Config, embedder ai.EmbeddingModel, store store.Datastore) {
 	wg.Add(1)
+
 	go func() {
 		p1 := pipeline.New(stages.NewIndexLoader(TOC_URL))
 		p2 := pipeline.AddStage(p1, stages.NewDebugStage())

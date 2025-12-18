@@ -16,13 +16,16 @@ import (
 // mcpCmd represents the mcp command
 var mcpCmd = &cobra.Command{
 	Use:   "mcp",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Start the MCP server for ConnectAll documentation search",
+	Long: `Start the Model Context Protocol (MCP) server that provides AI-powered 
+search capabilities for ConnectAll documentation.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+The MCP server exposes a 'search-documentation' tool that uses semantic search
+with embeddings to find relevant documentation based on natural language queries.
+The server communicates via stdio and can be integrated with MCP-compatible clients.
+
+Example:
+  connectall-doc-rag mcp`,
 	Run: func(cmd *cobra.Command, args []string) {
 		s := server.NewMCPServer(
 			"ConnectAll documentation",
@@ -40,12 +43,18 @@ to quickly create a Cobra application.`,
 
 		model := ai.NewGeminiEmbedder(config.GEMINI_API_KEY, config.AI.EmbeddingModel)
 
-		// Add a calculator tool
+		// Add documentation search tool
 		researchTool := mcp.NewTool("search-documentation",
-			mcp.WithDescription("Allows you to search the connectall documentation for Relevant Information for you."),
+			mcp.WithDescription(`Search ConnectAll documentation including official user guides and internal developer documentation. 
+Use this tool to find information about ConnectAll features, configuration, API usage, troubleshooting, and development guidelines. 
+Performs semantic search to find the most relevant documentation sections.`),
 			mcp.WithString("search-string",
 				mcp.Required(),
-				mcp.Description("The search-string that you want to search for!"),
+				mcp.Description(`A natural language query describing what you want to know about ConnectAll. 
+Examples: 'How to configure authentication', 
+					'API endpoints for integration', 
+					'troubleshooting connection errors', 
+					'developer setup guide'`),
 			),
 		)
 
@@ -72,6 +81,76 @@ to quickly create a Cobra application.`,
 			return mcp.NewToolResultText(resultString), nil
 		})
 
+		// Add prompts to guide LLM usage
+		s.AddPrompt(mcp.NewPrompt("connectall-help",
+			mcp.WithPromptDescription("Get help with ConnectAll features, configuration, or troubleshooting"),
+			mcp.WithArgument("topic",
+				mcp.ArgumentDescription("The specific topic or area you need help with (e.g., authentication, integrations, API)"),
+				mcp.RequiredArgument(),
+			),
+		), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
+			topic := request.Params.Arguments["topic"]
+
+			message := fmt.Sprintf(`I need help with ConnectAll. Please search the documentation for information about: %s
+
+Use the search-documentation tool to find relevant information from both official user guides and internal developer documentation.`, topic)
+
+			return mcp.NewGetPromptResult("",
+				[]mcp.PromptMessage{
+					mcp.NewPromptMessage(
+						mcp.RoleUser,
+						mcp.NewTextContent(message),
+					),
+				},
+			), nil
+		})
+
+		s.AddPrompt(mcp.NewPrompt("connectall-troubleshoot",
+			mcp.WithPromptDescription("Troubleshoot ConnectAll issues by searching documentation for solutions"),
+			mcp.WithArgument("issue",
+				mcp.ArgumentDescription("Description of the issue or error you're experiencing"),
+				mcp.RequiredArgument(),
+			),
+		), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
+			issue := request.Params.Arguments["issue"]
+
+			message := fmt.Sprintf(`I'm experiencing an issue with ConnectAll: %s
+
+Please search the documentation for troubleshooting information, common solutions, and relevant configuration details.`, issue)
+
+			return mcp.NewGetPromptResult("",
+				[]mcp.PromptMessage{
+					mcp.NewPromptMessage(
+						mcp.RoleUser,
+						mcp.NewTextContent(message),
+					),
+				},
+			), nil
+		})
+
+		s.AddPrompt(mcp.NewPrompt("connectall-develop",
+			mcp.WithPromptDescription("Find developer documentation for building with ConnectAll"),
+			mcp.WithArgument("dev-topic",
+				mcp.ArgumentDescription("What you want to develop or integrate (e.g., custom adapter, API integration, plugin)"),
+				mcp.RequiredArgument(),
+			),
+		), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
+			devTopic := request.Params.Arguments["dev-topic"]
+
+			message := fmt.Sprintf(`I'm developing with ConnectAll and need information about: %s
+
+Please search the internal developer documentation and API guides for relevant information and best practices.`, devTopic)
+
+			return mcp.NewGetPromptResult("",
+				[]mcp.PromptMessage{
+					mcp.NewPromptMessage(
+						mcp.RoleUser,
+						mcp.NewTextContent(message),
+					),
+				},
+			), nil
+		})
+
 		// Start the server
 		if err := server.ServeStdio(s); err != nil {
 			fmt.Printf("Server error: %v\n", err)
@@ -81,14 +160,4 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(mcpCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// mcpCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// mcpCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
