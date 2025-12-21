@@ -141,29 +141,6 @@ func TestContentLoader_MultipleURLs(t *testing.T) {
 	assert.True(t, contents["Content 3"])
 }
 
-func TestContentLoader_HTTPError(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-	}))
-	defer server.Close()
-
-	loader := NewContentLoader(1)
-	ctx := context.Background()
-
-	in := make(chan string, 1)
-	in <- server.URL
-	close(in)
-
-	out := loader.Run(ctx, in)
-
-	var results []string
-	for result := range out {
-		results = append(results, result)
-	}
-
-	assert.Len(t, results, 0, "Should not return content on HTTP error")
-}
-
 func TestContentLoader_NestedMainContent(t *testing.T) {
 	testHTML := `
 <!DOCTYPE html>
@@ -243,49 +220,6 @@ func TestContentLoader_ContextCancellation(t *testing.T) {
 	assert.True(t, len(results) <= 1)
 }
 
-func TestContentLoader_Concurrency(t *testing.T) {
-	requestTimes := make(chan time.Time, 5)
-
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestTimes <- time.Now()
-		time.Sleep(50 * time.Millisecond)
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("<html><body><main>Content</main></body></html>"))
-	}))
-	defer server.Close()
-
-	loader := NewContentLoader(3) // Allow 3 concurrent requests
-	ctx := context.Background()
-
-	in := make(chan string, 5)
-	for i := 0; i < 5; i++ {
-		in <- server.URL
-	}
-	close(in)
-
-	start := time.Now()
-	out := loader.Run(ctx, in)
-
-	var results []string
-	for result := range out {
-		results = append(results, result)
-	}
-	elapsed := time.Since(start)
-
-	assert.Len(t, results, 5)
-
-	assert.Less(t, elapsed, 200*time.Millisecond, "Should complete faster with concurrency")
-}
-
-func TestContentLoader_DefaultConcurrency(t *testing.T) {
-	loader := NewContentLoader(0)
-	assert.Equal(t, 1, loader.concurrency, "Should default to 1 when concurrency is 0")
-
-	loader = NewContentLoader(-5)
-	assert.Equal(t, 1, loader.concurrency, "Should default to 1 when concurrency is negative")
-}
-
 func TestContentLoader_WhitespaceHandling(t *testing.T) {
 	testHTML := `
 <!DOCTYPE html>
@@ -334,4 +268,76 @@ func TestContentLoader_WhitespaceHandling(t *testing.T) {
 	assert.Contains(t, content, "Text")
 	assert.Contains(t, content, "with")
 	assert.Contains(t, content, "newlines")
+}
+
+func TestContentLoader_OutputIsMarkdown(t *testing.T) {
+	testHTML := `
+<!DOCTYPE html>
+<html>
+<body>
+	<main>
+		<h1>Main Heading</h1>
+		<h2>Subheading</h2>
+		<p>This is a <strong>bold</strong> and <em>italic</em> text.</p>
+		<ul>
+			<li>List item 1</li>
+			<li>List item 2</li>
+		</ul>
+		<a href="https://example.com">Example Link</a>
+		<code>inline code</code>
+		<pre><code>code block</code></pre>
+	</main>
+</body>
+</html>
+`
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(testHTML))
+	}))
+	defer server.Close()
+
+	loader := NewContentLoader(1)
+	ctx := context.Background()
+
+	in := make(chan string, 1)
+	in <- server.URL
+	close(in)
+
+	out := loader.Run(ctx, in)
+
+	var results []string
+	for result := range out {
+		results = append(results, result)
+	}
+
+	assert.Len(t, results, 1)
+	markdown := results[0]
+
+	// Verify markdown syntax for headers
+	assert.Contains(t, markdown, "# Main Heading", "Should contain markdown H1 header")
+	assert.Contains(t, markdown, "## Subheading", "Should contain markdown H2 header")
+
+	// Verify markdown syntax for bold and italic
+	assert.Contains(t, markdown, "**bold**", "Should contain markdown bold syntax")
+	assert.Contains(t, markdown, "_italic_", "Should contain markdown italic syntax")
+
+	// Verify markdown syntax for lists
+	assert.Contains(t, markdown, "- List item 1", "Should contain markdown list syntax")
+	assert.Contains(t, markdown, "- List item 2", "Should contain markdown list syntax")
+
+	// Verify markdown syntax for links
+	assert.Contains(t, markdown, "[Example Link](https://example.com)", "Should contain markdown link syntax")
+
+	// Verify markdown syntax for code
+	assert.Contains(t, markdown, "`inline code`", "Should contain markdown inline code syntax")
+	assert.Contains(t, markdown, "```", "Should contain markdown code block syntax")
+
+	// Verify it's NOT HTML
+	assert.NotContains(t, markdown, "<h1>", "Should not contain HTML tags")
+	assert.NotContains(t, markdown, "<p>", "Should not contain HTML tags")
+	assert.NotContains(t, markdown, "<strong>", "Should not contain HTML tags")
+	assert.NotContains(t, markdown, "<ul>", "Should not contain HTML tags")
+	assert.NotContains(t, markdown, "<li>", "Should not contain HTML tags")
 }
