@@ -3,6 +3,7 @@ module broadcom.com/vertex-ingestor
 go 1.24.2
 
 require (
+	github.com/JohannesKaufmann/html-to-markdown v1.6.0
 	github.com/asg017/sqlite-vec-go-bindings v0.1.6
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/knadh/koanf/parsers/toml v0.1.0
@@ -23,6 +24,8 @@ require (
 	cloud.google.com/go v0.121.0 // indirect
 	cloud.google.com/go/auth v0.16.5 // indirect
 	cloud.google.com/go/compute/metadata v0.8.0 // indirect
+	github.com/PuerkitoBio/goquery v1.9.2 // indirect
+	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect

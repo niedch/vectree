@@ -6,19 +6,23 @@ import (
 	"net/http"
 	"strings"
 
+	md "github.com/JohannesKaufmann/html-to-markdown"
 	"golang.org/x/net/html"
 )
 
 type ContentLoader struct {
 	concurrency int
+	converter   *md.Converter
 }
 
 func NewContentLoader(concurrency int) *ContentLoader {
 	if concurrency <= 0 {
 		concurrency = 1
 	}
+	converter := md.NewConverter("", true, nil)
 	return &ContentLoader{
 		concurrency: concurrency,
+		converter:   converter,
 	}
 }
 
@@ -99,7 +103,7 @@ func (l ContentLoader) fetchAndExtractMain(ctx context.Context, url string) (str
 		return "", err
 	}
 
-	mainContent := extractMainContent(doc)
+	mainContent := l.extractMainContent(doc)
 	
 	if mainContent == "" {
 		log.Printf("Warning: No <main> tag found in %s", url)
@@ -108,13 +112,13 @@ func (l ContentLoader) fetchAndExtractMain(ctx context.Context, url string) (str
 	return mainContent, nil
 }
 
-func extractMainContent(n *html.Node) string {
+func (l ContentLoader) extractMainContent(n *html.Node) string {
 	mainNode := findMainTag(n)
 	if mainNode == nil {
 		return ""
 	}
 
-	return extractText(mainNode)
+	return l.htmlNodeToMarkdown(mainNode)
 }
 
 func findMainTag(n *html.Node) *html.Node {
@@ -131,27 +135,18 @@ func findMainTag(n *html.Node) *html.Node {
 	return nil
 }
 
-func extractText(n *html.Node) string {
+func (l ContentLoader) htmlNodeToMarkdown(n *html.Node) string {
+	// Convert the html.Node to an HTML string
 	var sb strings.Builder
-	extractTextRecursive(n, &sb)
+	html.Render(&sb, n)
+	htmlContent := sb.String()
 	
-	// Normalize whitespace: replace multiple spaces/newlines with single space
-	text := sb.String()
-	text = strings.Join(strings.Fields(text), " ")
+	// Convert HTML to Markdown using the library
+	markdown, err := l.converter.ConvertString(htmlContent)
+	if err != nil {
+		log.Printf("Error converting HTML to Markdown: %v", err)
+		return ""
+	}
 	
-	return strings.TrimSpace(text)
-}
-
-func extractTextRecursive(n *html.Node, sb *strings.Builder) {
-	if n.Type == html.TextNode {
-		text := n.Data
-		if text != "" {
-			sb.WriteString(text)
-			sb.WriteString(" ")
-		}
-	}
-
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		extractTextRecursive(c, sb)
-	}
+	return strings.TrimSpace(markdown)
 }
