@@ -96,7 +96,7 @@ func RunDocumentationPipelineAsync(ctx context.Context, wg *sync.WaitGroup, conf
 	wg.Add(1)
 
 	go func() {
-		p1 := pipeline.New(stages.NewIndexLoader(TOC_URL))
+		p1 := pipeline.New(stages.NewDocTocLoader(TOC_URL))
 		p2 := pipeline.AddStage(p1, stages.NewDebugStage())
 		p3 := pipeline.AddStage(p2, stages.NewContentLoader(config.Pipeline.DocuLoaderWorkers))
 		p4 := pipeline.AddStage(p3, stages.NewBatcher[string](config.Pipeline.EmbedderBatchSize))
