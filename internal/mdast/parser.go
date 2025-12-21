@@ -1,7 +1,7 @@
 package mdast
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -58,27 +58,39 @@ func Parse(tokens []Token) *DocumentNode {
 
 func PrintAST(n Node, indent int) string {
 	var sb strings.Builder
-	indentStr := strings.Repeat("  ", indent)
+	printASTHelper(n, indent, &sb)
+	return sb.String()
+}
+
+func printASTHelper(n Node, indent int, sb *strings.Builder) {
+	// Write indentation directly without allocating a string
+	for i := 0; i < indent; i++ {
+		sb.WriteString("  ")
+	}
 
 	// Print node type with additional information
+	// Avoid fmt.Sprintf by building strings directly
 	switch node := n.(type) {
 	case *DocumentNode:
-		sb.WriteString(fmt.Sprintf("%sDocument\n", indentStr))
+		sb.WriteString("Document\n")
 	case *HeadingNode:
-		sb.WriteString(fmt.Sprintf("%sHeading (level=%d)\n", indentStr, node.Level))
+		sb.WriteString("Heading (level=")
+		sb.WriteString(strconv.Itoa(node.Level))
+		sb.WriteString(")\n")
 	case *ParagraphNode:
-		sb.WriteString(fmt.Sprintf("%sParagraph\n", indentStr))
+		sb.WriteString("Paragraph\n")
 	case *TextNode:
-		sb.WriteString(fmt.Sprintf("%sText: %q\n", indentStr, node.Content))
+		sb.WriteString("Text: \"")
+		sb.WriteString(node.Content)
+		sb.WriteString("\"\n")
 	default:
-		sb.WriteString(fmt.Sprintf("%s%s\n", indentStr, n.Type()))
+		sb.WriteString(string(n.Type()))
+		sb.WriteByte('\n')
 	}
 
 	// Recursively print children
 	for _, c := range n.Children() {
-		sb.WriteString(PrintAST(c, indent+1))
+		printASTHelper(c, indent+1, sb)
 	}
-
-	return sb.String()
 }
 
