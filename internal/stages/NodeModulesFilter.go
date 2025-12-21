@@ -2,7 +2,6 @@ package stages
 
 import (
 	"context"
-	"log"
 	"strings"
 )
 
@@ -20,7 +19,6 @@ func (l NodeModulesFilter) Run(ctx context.Context, in <-chan string) <-chan str
 
 		for filePath := range in {
 			if strings.Contains(filePath, "node_modules") {
-				log.Println("Ignoring File", filePath)
 				continue
 			}
 
