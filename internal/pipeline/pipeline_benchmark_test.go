@@ -65,10 +65,10 @@ func BenchmarkPipeline(b *testing.B) {
 		p1 := New(stages.NewDirLoader(tmpDir))
 		p2 := AddStage(p1, stages.NewIndexFileFilter())
 		p3 := AddStage(p2, stages.NewFileLoader())
-		p4 := AddStage(p3, stages.NewHeaderSplitter())
-		p5 := AddStage(p4, stages.NewBatcher[string](32))
+		p4 := AddStage(p3, stages.NewMdAstSplitter())
+		p5 := AddStage(p4, stages.NewBatcher[string](64))
 		p6 := AddStage(p5, stages.NewEmbedder(benchmarkModel, 8))
-		p7 := AddStage(p6, stages.NewBatcher[*stages.EmbedderOut](32))
+		p7 := AddStage(p6, stages.NewBatcher[*stages.EmbedderOut](64))
 		p8 := AddStage(p7, stages.NewStore(benchmarkStore))
 
 		// --- Run Pipeline ---

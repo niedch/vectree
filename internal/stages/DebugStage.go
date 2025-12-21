@@ -20,6 +20,7 @@ func (l DebugStage) Run(ctx context.Context, in <-chan string) <-chan string {
 
 		for str := range in {
 			log.Println(str)
+			log.Println("----------------------------------------------------------------")
 
 			select {
 			case out <- str:

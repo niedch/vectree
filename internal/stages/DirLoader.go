@@ -3,7 +3,6 @@ package stages
 import (
 	"context"
 	"io/fs"
-	"log"
 	"path/filepath"
 	"strings"
 )
@@ -32,7 +31,6 @@ func (l DirLoader) Run(ctx context.Context, _ <-chan any) <-chan string {
 				return ctx.Err()
 			}
 			if !info.IsDir() && strings.HasSuffix(info.Name(), ".md") {
-				log.Println("Found File: ", path)
 				select {
 				case out <- path:
 				case <-ctx.Done():

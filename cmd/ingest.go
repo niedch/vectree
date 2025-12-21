@@ -63,7 +63,7 @@ The process runs asynchronously and waits for both pipelines to complete.`,
 
 		var wg sync.WaitGroup
 
-		RunDocumentationPipelineAsync(ctx, &wg, config, embedder, store)
+		// RunDocumentationPipelineAsync(ctx, &wg, config, embedder, store)
 		RunMarkdownPipelineAsync(ctx, &wg, config, embedder, store)
 
 		wg.Wait()
