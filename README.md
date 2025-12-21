@@ -30,6 +30,37 @@ The system runs two parallel ingestion pipelines:
    - Splits documents using header-based chunking
    - Generates embeddings for each section
 
+```mermaid
+graph TD
+    subgraph "Documentation Pipeline"
+        A1[IndexLoader<br/>Fetch TOC from TechDocs] --> A2[DebugStage<br/>Log URLs]
+        A2 --> A3[ContentLoader<br/>Download HTML pages<br/>Parallel workers]
+        A3 --> A4[Batcher<br/>Group chunks<br/>Batch size: 64]
+        A4 --> A5[Embedder<br/>Generate embeddings<br/>8 workers]
+        A5 --> A6[Batcher<br/>Group for storage]
+        A6 --> A7[Store<br/>Save to SQLite]
+    end
+
+    subgraph "Markdown Pipeline"
+        B1[DirLoader<br/>Scan ../connectall] --> B2[NodeModulesFilter<br/>Filter irrelevant files]
+        B2 --> B3[FileLoader<br/>Read markdown files]
+        B3 --> B4[HeaderSplitter<br/>Split by headers]
+        B4 --> B5[Batcher<br/>Group chunks<br/>Batch size: 64]
+        B5 --> B6[Embedder<br/>Generate embeddings<br/>8 workers]
+        B6 --> B7[Batcher<br/>Group for storage]
+        B7 --> B8[Store<br/>Save to SQLite]
+    end
+
+    A7 --> DB[(SQLite Database<br/>with Vector Extensions)]
+    B8 --> DB
+
+    style A1 fill:#e1f5ff
+    style B1 fill:#e1f5ff
+    style A7 fill:#c8e6c9
+    style B8 fill:#c8e6c9
+    style DB fill:#fff9c4
+```
+
 ### MCP Server
 
 The MCP server provides:
