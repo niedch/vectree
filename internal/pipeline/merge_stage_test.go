@@ -55,7 +55,7 @@ func TestMergeWithContext(t *testing.T) {
 	ch2 := make(chan int)
 
 	go func() {
-		for i := 0; i < 100; i++ {
+		for i := range 100 {
 			ch1 <- i
 			time.Sleep(10 * time.Millisecond)
 		}
@@ -118,7 +118,7 @@ func TestMergePipelines(t *testing.T) {
 
 	// Create a main pipeline with the merge stage
 	mainPipeline := pipeline.NewPipeline()
-	mainPipeline.AddStage(pipeline.MergePipelines(ctx, pipeline1, pipeline2))
+	mainPipeline.AddStage(pipeline.MergePipelines(pipeline1, pipeline2))
 
 	// Run and collect results
 	out := mainPipeline.Run(ctx)
