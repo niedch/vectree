@@ -57,10 +57,10 @@ graph TD
 
     style A1 fill:#e1f5ff
     style B1 fill:#e1f5ff
-    style A4 fill:#ffe0b2
-    style B4 fill:#ffe0b2
-    style A8 fill:#c8e6c9
-    style B8 fill:#c8e6c9
+    style A4 fill:#e1f5ff
+    style B4 fill:#e1f5ff
+    style A8 fill:#e1f5ff
+    style B8 fill:#e1f5ff
     style DB fill:#fff9c4
 ```
 
