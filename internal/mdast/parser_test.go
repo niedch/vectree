@@ -2,22 +2,21 @@ package mdast
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseMarkdown_EmptyInput(t *testing.T) {
 	markdown := ""
 	doc := ParseMarkdown(markdown)
 
-	if doc == nil {
-		t.Fatal("Expected non-nil document")
-	}
+	require.NotNil(t, doc, "Expected non-nil document")
 
 	expected := `Document
 `
 	actual := PrintAST(doc, 0)
-	if actual != expected {
-		t.Errorf("AST mismatch.\nExpected:\n%s\nActual:\n%s", expected, actual)
-	}
+	assert.Equal(t, expected, actual, "AST mismatch")
 }
 
 func TestParseMarkdown_SingleHeading(t *testing.T) {
@@ -30,9 +29,7 @@ func TestParseMarkdown_SingleHeading(t *testing.T) {
     Text: "Hello World"
 `
 	actual := PrintAST(doc, 0)
-	if actual != expected {
-		t.Errorf("AST mismatch.\nExpected:\n%s\nActual:\n%s", expected, actual)
-	}
+	assert.Equal(t, expected, actual, "AST mismatch")
 }
 
 func TestParseMarkdown_MultipleHeadingLevels(t *testing.T) {
@@ -51,9 +48,7 @@ func TestParseMarkdown_MultipleHeadingLevels(t *testing.T) {
     Text: "Section"
 `
 	actual := PrintAST(doc, 0)
-	if actual != expected {
-		t.Errorf("AST mismatch.\nExpected:\n%s\nActual:\n%s", expected, actual)
-	}
+	assert.Equal(t, expected, actual, "AST mismatch")
 }
 
 func TestParseMarkdown_SingleParagraph(t *testing.T) {
@@ -66,9 +61,7 @@ func TestParseMarkdown_SingleParagraph(t *testing.T) {
     Text: "This is a paragraph."
 `
 	actual := PrintAST(doc, 0)
-	if actual != expected {
-		t.Errorf("AST mismatch.\nExpected:\n%s\nActual:\n%s", expected, actual)
-	}
+	assert.Equal(t, expected, actual, "AST mismatch")
 }
 
 func TestParseMarkdown_MultiLineParagraph(t *testing.T) {
@@ -85,9 +78,7 @@ Line three.`
     Text: "Line three."
 `
 	actual := PrintAST(doc, 0)
-	if actual != expected {
-		t.Errorf("AST mismatch.\nExpected:\n%s\nActual:\n%s", expected, actual)
-	}
+	assert.Equal(t, expected, actual, "AST mismatch")
 }
 
 func TestParseMarkdown_HeadingAndParagraph(t *testing.T) {
@@ -104,9 +95,7 @@ This is the introduction paragraph.`
     Text: "This is the introduction paragraph."
 `
 	actual := PrintAST(doc, 0)
-	if actual != expected {
-		t.Errorf("AST mismatch.\nExpected:\n%s\nActual:\n%s", expected, actual)
-	}
+	assert.Equal(t, expected, actual, "AST mismatch")
 }
 
 func TestParseMarkdown_ComplexDocument(t *testing.T) {
@@ -143,9 +132,7 @@ Section two line two.`
     Text: "Section two line two."
 `
 	actual := PrintAST(doc, 0)
-	if actual != expected {
-		t.Errorf("AST mismatch.\nExpected:\n%s\nActual:\n%s", expected, actual)
-	}
+	assert.Equal(t, expected, actual, "AST mismatch")
 }
 
 func TestParseMarkdown_BlankLinesIgnored(t *testing.T) {
@@ -165,9 +152,7 @@ Paragraph text.
     Text: "Paragraph text."
 `
 	actual := PrintAST(doc, 0)
-	if actual != expected {
-		t.Errorf("AST mismatch.\nExpected:\n%s\nActual:\n%s", expected, actual)
-	}
+	assert.Equal(t, expected, actual, "AST mismatch")
 }
 
 func TestParseMarkdown_AllHeadingLevels(t *testing.T) {
@@ -195,9 +180,7 @@ func TestParseMarkdown_AllHeadingLevels(t *testing.T) {
     Text: "Level 6"
 `
 	actual := PrintAST(doc, 0)
-	if actual != expected {
-		t.Errorf("AST mismatch.\nExpected:\n%s\nActual:\n%s", expected, actual)
-	}
+	assert.Equal(t, expected, actual, "AST mismatch")
 }
 
 func TestParseMarkdown_RealWorldExample(t *testing.T) {
@@ -304,9 +287,7 @@ Contact support if you need additional assistance.`
     Text: "Contact support if you need additional assistance."
 `
 	actual := PrintAST(doc, 0)
-	if actual != expected {
-		t.Errorf("AST mismatch.\nExpected:\n%s\nActual:\n%s", expected, actual)
-	}
+	assert.Equal(t, expected, actual, "AST mismatch")
 }
 
 func TestParseMarkdown_MixedContent(t *testing.T) {
@@ -381,7 +362,5 @@ Supports pagination and filtering.`
     Text: "Supports pagination and filtering."
 `
 	actual := PrintAST(doc, 0)
-	if actual != expected {
-		t.Errorf("AST mismatch.\nExpected:\n%s\nActual:\n%s", expected, actual)
-	}
+	assert.Equal(t, expected, actual, "AST mismatch")
 }

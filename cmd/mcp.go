@@ -21,9 +21,40 @@ var mcpCmd = &cobra.Command{
 	Long: `Start the Model Context Protocol (MCP) server that provides AI-powered 
 search capabilities for ConnectAll documentation.
 
-The MCP server exposes a 'search-documentation' tool that uses semantic search
-with embeddings to find relevant documentation based on natural language queries.
-The server communicates via stdio and can be integrated with MCP-compatible clients.
+The MCP server exposes tools and prompts for searching and navigating documentation:
+
+Tools:
+  1. search-documentation
+     - Performs semantic search across all ingested documentation
+     - Uses vector similarity to find relevant content
+     - Returns ranked results with document IDs and metadata
+     - Accepts natural language queries
+
+  2. get-parent-context
+     - Retrieves the parent document for a given document ID
+     - Useful for understanding broader context of search results
+     - Returns the parent section/heading that contains the document
+
+Prompts:
+  1. connectall-help
+     - Guides LLM to search for help on specific topics
+     - Example topics: authentication, integrations, API
+
+  2. connectall-troubleshoot
+     - Helps troubleshoot issues by searching documentation
+     - Searches for error messages, solutions, and workarounds
+
+  3. connectall-develop
+     - Finds developer documentation and API guides
+     - Useful for building integrations and custom adapters
+
+The server communicates via stdio and can be integrated with MCP-compatible 
+clients like Claude Desktop, Zed, or other AI assistants.
+
+Configuration:
+- Requires GEMINI_API_KEY environment variable
+- Uses the same embedding model as ingestion for query encoding
+- Similarity results count configurable via config
 
 Example:
   connectall-doc-rag mcp`,

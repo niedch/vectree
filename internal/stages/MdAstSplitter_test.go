@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMdAstSplitter_Run(t *testing.T) {
@@ -189,25 +191,14 @@ L4 content.`,
 			}
 
 			// Verify the number of outputs
-			if len(results) != len(tt.expected) {
-				t.Errorf("Expected %d outputs, got %d", len(tt.expected), len(results))
-				t.Logf("Expected: %v", tt.expected)
-				t.Logf("Got: %v", results)
-				return
-			}
+			assert.Equal(t, len(tt.expected), len(results), "Number of outputs mismatch")
 
 			// Verify each output
 			for i, expected := range tt.expected {
-				if results[i].Text != expected.Text {
-					t.Errorf("Output %d text mismatch.\nExpected: %q\nGot: %q", i, expected.Text, results[i].Text)
-				}
-				if results[i].Level != expected.Level {
-					t.Errorf("Output %d level mismatch.\nExpected: %d\nGot: %d", i, expected.Level, results[i].Level)
-				}
+				assert.Equal(t, expected.Text, results[i].Text, "Output %d text mismatch", i)
+				assert.Equal(t, expected.Level, results[i].Level, "Output %d level mismatch", i)
 				// DocumentId should be set (non-empty)
-				if results[i].DocumentId == "" {
-					t.Errorf("Output %d DocumentId should not be empty", i)
-				}
+				assert.NotEmpty(t, results[i].DocumentId, "Output %d DocumentId should not be empty", i)
 			}
 		})
 	}
@@ -240,34 +231,21 @@ func TestMdAstSplitter_MultipleDocuments(t *testing.T) {
 		{Text: "# Doc 3\n", Level: 1},
 	}
 
-	if len(results) != len(expected) {
-		t.Errorf("Expected %d outputs, got %d", len(expected), len(results))
-		t.Logf("Expected: %v", expected)
-		t.Logf("Got: %v", results)
-		return
-	}
+	assert.Equal(t, len(expected), len(results), "Number of outputs mismatch")
 
 	// Track document IDs to verify they're different for different documents
 	docIds := make(map[string]bool)
 	
 	for i, exp := range expected {
-		if results[i].Text != exp.Text {
-			t.Errorf("Output %d text mismatch.\nExpected: %q\nGot: %q", i, exp.Text, results[i].Text)
-		}
-		if results[i].Level != exp.Level {
-			t.Errorf("Output %d level mismatch.\nExpected: %d\nGot: %d", i, exp.Level, results[i].Level)
-		}
+		assert.Equal(t, exp.Text, results[i].Text, "Output %d text mismatch", i)
+		assert.Equal(t, exp.Level, results[i].Level, "Output %d level mismatch", i)
 		// DocumentId should be set (non-empty)
-		if results[i].DocumentId == "" {
-			t.Errorf("Output %d DocumentId should not be empty", i)
-		}
+		assert.NotEmpty(t, results[i].DocumentId, "Output %d DocumentId should not be empty", i)
 		docIds[results[i].DocumentId] = true
 	}
 	
 	// We should have 3 different document IDs (one for each input document)
-	if len(docIds) != 3 {
-		t.Errorf("Expected 3 different document IDs, got %d", len(docIds))
-	}
+	assert.Equal(t, 3, len(docIds), "Expected 3 different document IDs")
 }
 
 func TestMdAstSplitter_ContextCancellation(t *testing.T) {
@@ -304,9 +282,7 @@ func TestMdAstSplitter_ContextCancellation(t *testing.T) {
 	}
 
 	// We should have received fewer than 1000 results due to cancellation
-	if count >= 1000 {
-		t.Errorf("Expected fewer than 1000 results due to cancellation, got %d", count)
-	}
+	assert.Less(t, count, 1000, "Expected fewer than 1000 results due to cancellation")
 	
 	t.Logf("Received %d results before cancellation", count)
 }
@@ -328,7 +304,5 @@ func TestMdAstSplitter_EmptyInput(t *testing.T) {
 		results = append(results, result)
 	}
 
-	if len(results) != 0 {
-		t.Errorf("Expected 0 outputs for empty input, got %d", len(results))
-	}
+	assert.Empty(t, results, "Expected 0 outputs for empty input")
 }

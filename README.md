@@ -3,6 +3,33 @@
 A high-performance document ingestion and Retrieval-Augmented Generation (RAG) system for ConnectAll documentation. 
 This tool enables AI assistants to search and retrieve relevant documentation using semantic search powered by vector embeddings.
 
+## Usage
+
+### MCP Client Configuration
+
+Add this configuration to your MCP client (e.g. Cursor):
+
+```json
+{
+  "mcpServers": {
+    "connectall-doc-rag": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GEMINI_API_KEY",
+        "connectall-doc-rag:latest"
+      ],
+      "env": {
+        "GEMINI_API_KEY": "${env:GEMINI_API_KEY}"
+      }
+    }
+  }
+}
+```
+
 ## Features
 
 - **Dual-Source Ingestion**: Processes both web-based documentation and local markdown files
@@ -168,12 +195,35 @@ Each section maintains its hierarchical context, making it ideal for semantic se
 
 ### MCP Server
 
-The MCP server provides:
-- `search-documentation` tool for semantic search
-- Pre-built prompts for common use cases:
-  - `connectall-help`: General help with features and configuration
-  - `connectall-troubleshoot`: Troubleshooting assistance
-  - `connectall-develop`: Developer documentation search
+The MCP server provides two tools and three pre-built prompts:
+
+**Tools:**
+
+1. **`search-documentation`** - Semantic search across all documentation
+   - Accepts natural language queries
+   - Uses vector similarity to find relevant content
+   - Returns ranked results with document IDs, levels, and metadata
+   - Example: "How to configure authentication in ConnectAll"
+
+2. **`get-parent-context`** - Retrieve parent section for broader context
+   - Takes a document ID from search results
+   - Returns the parent document/section that contains it
+   - Useful for understanding the broader topic or category
+   - Example: If you find a Level 3 subsection, get its Level 2 parent section
+   - Helps navigate the document hierarchy
+
+**Prompts:**
+
+- `connectall-help`: General help with features and configuration
+- `connectall-troubleshoot`: Troubleshooting assistance
+- `connectall-develop`: Developer documentation search
+
+**Workflow Example:**
+
+1. Use `search-documentation` to find relevant content: "API authentication methods"
+2. Review results and identify a relevant document (e.g., Document ID: 42, Level: 3)
+3. Use `get-parent-context` with document ID 42 to get the broader section context
+4. Understand the full picture by seeing the parent Level 2 section that contains the authentication details
 
 ## Prerequisites
 
@@ -207,31 +257,4 @@ make docker-build
 This requires the following environment variables:
 - `GITHUB_ENTERPRISE_API_KEY`: Token for accessing the ConnectAll repository
 - `GEMINI_API_KEY`: Google Gemini API key for embeddings
-
-## Usage
-
-### MCP Client Configuration
-
-Add this configuration to your MCP client (e.g., Claude Desktop):
-
-```json
-{
-  "mcpServers": {
-    "connectall-doc-rag": {
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--rm",
-        "-e",
-        "GEMINI_API_KEY",
-        "connectall-doc-rag:latest"
-      ],
-      "env": {
-        "GEMINI_API_KEY": "$GEMINI_API_KEY"
-      }
-    }
-  }
-}
-```
 

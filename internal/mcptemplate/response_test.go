@@ -1,10 +1,10 @@
 package mcptemplate
 
 import (
-	"strings"
 	"testing"
 
 	"broadcom.com/vertex-ingestor/internal/datastore"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBuildResponseString(t *testing.T) {
@@ -47,9 +47,7 @@ func TestBuildResponseString(t *testing.T) {
 	}
 
 	for _, expected := range expectedElements {
-		if !strings.Contains(result, expected) {
-			t.Errorf("Expected result to contain %q, but it didn't.\nResult:\n%s", expected, result)
-		}
+		assert.Contains(t, result, expected, "Expected result to contain %q", expected)
 	}
 }
 
@@ -59,14 +57,10 @@ func TestBuildResponseStringEmpty(t *testing.T) {
 	result := BuildResponseString(docs)
 
 	// Should still contain the tip even with no documents
-	if !strings.Contains(result, "💡 Tip:") {
-		t.Errorf("Expected result to contain tip, got: %q", result)
-	}
+	assert.Contains(t, result, "💡 Tip:", "Expected result to contain tip")
 	
 	// Should not contain any document results
-	if strings.Contains(result, "## Document Result") {
-		t.Errorf("Expected no document results for empty input, got: %q", result)
-	}
+	assert.NotContains(t, result, "## Document Result", "Expected no document results for empty input")
 }
 
 func TestBuildResponseStringSingleDocument(t *testing.T) {
@@ -86,9 +80,7 @@ func TestBuildResponseStringSingleDocument(t *testing.T) {
 	result := BuildResponseString(docs)
 
 	// Should contain the tip separator and final tip
-	if !strings.Contains(result, "💡 Tip:") {
-		t.Error("Result should contain the tip at the end")
-	}
+	assert.Contains(t, result, "💡 Tip:", "Result should contain the tip at the end")
 
 	// Should contain the document content and metadata
 	expectedElements := []string{
@@ -99,8 +91,6 @@ func TestBuildResponseStringSingleDocument(t *testing.T) {
 	}
 
 	for _, expected := range expectedElements {
-		if !strings.Contains(result, expected) {
-			t.Errorf("Expected result to contain %q, but it didn't.\nResult:\n%s", expected, result)
-		}
+		assert.Contains(t, result, expected, "Expected result to contain %q", expected)
 	}
 }

@@ -2,6 +2,8 @@ package mdast
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNodeToMarkdown_SimpleHeading(t *testing.T) {
@@ -11,9 +13,7 @@ func TestNodeToMarkdown_SimpleHeading(t *testing.T) {
 	result := doc.ToMarkdown()
 	expected := "# Hello World\n"
 	
-	if result != expected {
-		t.Errorf("Markdown conversion failed.\nExpected:\n%q\nActual:\n%q", expected, result)
-	}
+	assert.Equal(t, expected, result, "Markdown conversion failed")
 }
 
 func TestNodeToMarkdown_SimpleParagraph(t *testing.T) {
@@ -23,9 +23,7 @@ func TestNodeToMarkdown_SimpleParagraph(t *testing.T) {
 	result := doc.ToMarkdown()
 	expected := "This is a paragraph.\n"
 	
-	if result != expected {
-		t.Errorf("Markdown conversion failed.\nExpected:\n%q\nActual:\n%q", expected, result)
-	}
+	assert.Equal(t, expected, result, "Markdown conversion failed")
 }
 
 func TestNodeToMarkdown_MultiLineParagraph(t *testing.T) {
@@ -37,9 +35,7 @@ Line three.`
 	result := doc.ToMarkdown()
 	expected := "Line one.Line two.Line three.\n"
 	
-	if result != expected {
-		t.Errorf("Markdown conversion failed.\nExpected:\n%q\nActual:\n%q", expected, result)
-	}
+	assert.Equal(t, expected, result, "Markdown conversion failed")
 }
 
 func TestNodeToMarkdown_HeadingAndParagraph(t *testing.T) {
@@ -51,9 +47,7 @@ This is the introduction paragraph.`
 	result := doc.ToMarkdown()
 	expected := "# Introduction\n\nThis is the introduction paragraph.\n"
 	
-	if result != expected {
-		t.Errorf("Markdown conversion failed.\nExpected:\n%q\nActual:\n%q", expected, result)
-	}
+	assert.Equal(t, expected, result, "Markdown conversion failed")
 }
 
 func TestNodeToMarkdown_ComplexDocument(t *testing.T) {
@@ -87,9 +81,7 @@ Section one content.
 Section two line one.Section two line two.
 `
 	
-	if result != expected {
-		t.Errorf("Markdown conversion failed.\nExpected:\n%q\nActual:\n%q", expected, result)
-	}
+	assert.Equal(t, expected, result, "Markdown conversion failed")
 }
 
 func TestNodeToMarkdown_AllHeadingLevels(t *testing.T) {
@@ -116,9 +108,7 @@ func TestNodeToMarkdown_AllHeadingLevels(t *testing.T) {
 ###### Level 6
 `
 	
-	if result != expected {
-		t.Errorf("Markdown conversion failed.\nExpected:\n%q\nActual:\n%q", expected, result)
-	}
+	assert.Equal(t, expected, result, "Markdown conversion failed")
 }
 
 func TestNodeToMarkdown_IndividualHeadingNode(t *testing.T) {
@@ -134,9 +124,7 @@ func TestNodeToMarkdown_IndividualHeadingNode(t *testing.T) {
 	result := heading.ToMarkdown()
 	expected := "## Test Heading\n"
 	
-	if result != expected {
-		t.Errorf("Markdown conversion failed.\nExpected:\n%q\nActual:\n%q", expected, result)
-	}
+	assert.Equal(t, expected, result, "Markdown conversion failed")
 }
 
 func TestNodeToMarkdown_IndividualParagraphNode(t *testing.T) {
@@ -151,9 +139,7 @@ func TestNodeToMarkdown_IndividualParagraphNode(t *testing.T) {
 	result := para.ToMarkdown()
 	expected := "Test paragraph.\n"
 	
-	if result != expected {
-		t.Errorf("Markdown conversion failed.\nExpected:\n%q\nActual:\n%q", expected, result)
-	}
+	assert.Equal(t, expected, result, "Markdown conversion failed")
 }
 
 func TestNodeToMarkdown_IndividualTextNode(t *testing.T) {
@@ -165,9 +151,7 @@ func TestNodeToMarkdown_IndividualTextNode(t *testing.T) {
 	result := text.ToMarkdown()
 	expected := "Just some text"
 	
-	if result != expected {
-		t.Errorf("Markdown conversion failed.\nExpected:\n%q\nActual:\n%q", expected, result)
-	}
+	assert.Equal(t, expected, result, "Markdown conversion failed")
 }
 
 func TestNodeToMarkdown_EmptyDocument(t *testing.T) {
@@ -178,7 +162,5 @@ func TestNodeToMarkdown_EmptyDocument(t *testing.T) {
 	result := doc.ToMarkdown()
 	expected := ""
 	
-	if result != expected {
-		t.Errorf("Markdown conversion failed.\nExpected:\n%q\nActual:\n%q", expected, result)
-	}
+	assert.Equal(t, expected, result, "Markdown conversion failed")
 }

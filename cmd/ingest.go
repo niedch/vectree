@@ -18,31 +18,38 @@ const (
 
 var ingestCmd = &cobra.Command{
 	Use:   "ingest",
-	Short: "Ingests ConnectAll documentation and generates vector embeddings",
+	Short: "Ingest ConnectAll documentation and generate vector embeddings",
 	Long: `The ingest command processes ConnectAll documentation from multiple sources and stores vector embeddings.
 
 This command runs two parallel ingestion pipelines:
 
-1. Documentation Pipeline:
-   - Fetches the table of contents from Broadcom TechDocs
+1. Web Documentation Pipeline:
+   - Fetches the table of contents from Broadcom TechDocs (techdocs.broadcom.com)
    - Downloads all linked documentation pages
-   - Processes HTML content into text chunks
-   - Generates embeddings for each chunk
+   - Extracts content from HTML <main> tags
+   - Converts HTML to Markdown format
 
-2. Markdown Pipeline:
+2. Local Markdown Pipeline:
    - Scans local markdown files in the ../connectall directory
-	- Header-based splitting for semantic coherence
    - Filters out node_modules and other irrelevant files
-   - Splits documents using header-based chunking
-   - Generates embeddings for each section
+   - Loads markdown file content
 
-Both pipelines use:
-- Google Gemini embedding-001 model for vector generation
-- Batch processing (64 chunks per batch) for efficiency
-- Parallel embedding generation (8 concurrent workers)
-- SQLite database for persistent storage
+Both pipelines then:
+   - Split documents using Markdown AST-based header splitting
+   - Create overlapping sections with parent context for better retrieval
+   - Batch documents for efficient processing (configurable batch size)
+   - Generate embeddings using Google Gemini embedding model
+   - Store chunks with embeddings in SQLite vector database
+   - Maintain parent-child relationships between document sections
 
-The process runs asynchronously and waits for both pipelines to complete.`,
+Configuration:
+- Embedding model: Configurable via config (default: text-embedding-004)
+- Batch size: Configurable for both embedding and storage stages
+- Workers: Parallel embedding generation (default: 8 workers)
+- Database: SQLite with vec0 extension for vector similarity search
+
+Example:
+  connectall-doc-rag ingest`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 		config := conf.Load()

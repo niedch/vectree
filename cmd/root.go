@@ -8,25 +8,40 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "connectall-doc-rag",
-	Short: "A document ingestion and RAG (Retrieval-Augmented Generation) system for ConnectAll documentation",
-	Long: `connectall-doc-rag is a command-line tool for building and serving a RAG system for ConnectAll documentation.
+	Short: "Document ingestion and RAG system for ConnectAll documentation",
+	Long: `connectall-doc-rag is a command-line tool for building and serving a RAG (Retrieval-Augmented Generation) 
+system for ConnectAll documentation.
 
-This tool provides two main capabilities:
+This tool provides three main commands:
 
-1. Document Ingestion (ingest command):
-   - Crawls ConnectAll documentation from multiple sources
-   - Splits documents into semantic chunks using header-based splitting
+1. ingest - Document Ingestion Pipeline
+   - Crawls ConnectAll documentation from Broadcom TechDocs
+   - Loads local markdown files from the ../connectall directory
+   - Splits documents using Markdown AST-based header splitting
    - Generates vector embeddings using Google's Gemini embedding model
-   - Stores embeddings in a SQLite vector database for efficient retrieval
+   - Stores embeddings in SQLite database with vec0 extension
+   - Maintains hierarchical document relationships (parent-child)
 
-2. MCP Server (mcp command):
+2. mcp - Model Context Protocol Server
    - Exposes documentation search via the Model Context Protocol (MCP)
-   - Enables AI assistants to search and retrieve relevant documentation
-   - Performs semantic search using vector similarity
-   - Returns contextually relevant documentation chunks
+   - Provides 'search-documentation' tool for semantic search
+   - Provides 'get-parent-context' tool for retrieving parent sections
+   - Includes helpful prompts for common documentation tasks
+   - Communicates via stdio for integration with AI assistants
 
-The system uses a pipeline architecture for efficient parallel processing of documents
-and supports both web-based documentation crawling and local markdown file ingestion.`,
+3. ingestDebug - Development/Debug Command
+   - Tests the document loading pipeline in isolation
+   - Useful for debugging file loading and processing issues
+   - Does not perform embedding generation or storage
+
+Architecture:
+- Pipeline-based processing with typed stages
+- Parallel processing with configurable workers
+- Batch processing for efficient embedding generation
+- Vector similarity search using SQLite vec0 extension
+- Hierarchical document structure with parent-child relationships
+
+Use 'connectall-doc-rag [command] --help' for more information about a command.`,
 }
 
 func Execute() {
