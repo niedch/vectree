@@ -28,12 +28,6 @@ WORKDIR /app
 # Install runtime dependencies including git
 RUN apt-get update && apt-get install -y ca-certificates libsqlite3-0 git && rm -rf /var/lib/apt/lists/*
 
-# Copy the binary from the builder stage
-COPY --from=builder /app/connectall-doc-rag .
-
-# Copy configuration file
-COPY config.toml .
-
 # Clone repository using HTTPS with token
 # If GIT_TOKEN is not provided, try SSH as fallback
 ARG GIT_TOKEN
@@ -42,6 +36,12 @@ RUN if [ -n "$GIT_TOKEN" ]; then \
     else \
         echo "Error: GIT_TOKEN build argument is required" && exit 1; \
     fi
+
+# Copy the binary from the builder stage
+COPY --from=builder /app/connectall-doc-rag .
+
+# Copy configuration file
+COPY config.toml .
 
 ARG GEMINI_API_KEY=OVERRIDE
 
