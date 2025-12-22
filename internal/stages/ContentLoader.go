@@ -27,19 +27,44 @@ func NewContentLoader(concurrency int) *ContentLoader {
 }
 
 func (l ContentLoader) Run(ctx context.Context, in <-chan string) <-chan string {
-	return ParallelStage(ctx, in, l.concurrency, func(ctx context.Context, url string) (string, bool) {
-		content, err := l.fetchAndExtractMain(ctx, url)
+	out := make(chan string)
+	
+	go func() {
+		defer close(out)
 		
-		if err != nil {
-			return "", false
-		}
+		urlCount := 0
+		var totalSize uint64 = 0
+		
+		innerOut := ParallelStage(ctx, in, l.concurrency, func(ctx context.Context, url string) (string, bool) {
+			content, err := l.fetchAndExtractMain(ctx, url)
+			
+			if err != nil {
+				return "", false
+			}
 
-		if content == "" {
-			return "", false
-		}
+			if content == "" {
+				return "", false
+			}
 
-		return content, true
-	})
+			return content, true
+		})
+		
+		for content := range innerOut {
+			urlCount++
+			totalSize += uint64(len(content))
+			
+			select {
+			case out <- content:
+			case <-ctx.Done():
+				return
+			}
+		}
+		
+		log.Printf("ContentLoader: Loaded %d URLs, total size: %d bytes (%.2f MB)\n", 
+			urlCount, totalSize, float64(totalSize)/(1024*1024))
+	}()
+	
+	return out
 }
 
 func (l ContentLoader) fetchAndExtractMain(ctx context.Context, url string) (string, error) {

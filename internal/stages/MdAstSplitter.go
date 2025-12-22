@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"log"
 	"strings"
 )
 
@@ -25,24 +26,44 @@ func (s MdAstSplitter) Run(ctx context.Context, in <-chan string) <-chan Section
 	out := make(chan SectionWithLevel)
 	go func() {
 		defer close(out)
+		docCount := 0
+		var totalInputSize uint64 = 0
+		var totalOutputSize uint64 = 0
+		sectionCount := 0
+
 		for doc := range in {
+			docCount++
+			inputSize := len(doc)
+			totalInputSize += uint64(inputSize)
+
 			// Generate a unique document ID based on content hash
 			hash := sha256.Sum256([]byte(doc))
 			documentId := hex.EncodeToString(hash[:8]) // Use first 8 bytes for brevity
 
 			docNode := mdast.ParseMarkdown(doc)
 
-			if !extractAllSections(ctx, docNode, documentId, out) {
+			if !extractAllSections(ctx, docNode, documentId, out, &sectionCount, &totalOutputSize) {
 				return
 			}
+
+			if docCount%100 == 0 {
+				log.Printf("MdAstSplitter: Processed %d documents, %d sections so far. Input: %d bytes, Output: %d bytes\n", 
+					docCount, sectionCount, totalInputSize, totalOutputSize)
+			}
 		}
+
+		log.Printf("MdAstSplitter: Total processed %d documents into %d sections\n", docCount, sectionCount)
+		log.Printf("MdAstSplitter: Input size: %d bytes (%.2f MB), Output size: %d bytes (%.2f MB)\n", 
+			totalInputSize, float64(totalInputSize)/(1024*1024), 
+			totalOutputSize, float64(totalOutputSize)/(1024*1024))
+		log.Printf("MdAstSplitter: Expansion ratio: %.2fx\n", float64(totalOutputSize)/float64(totalInputSize))
 	}()
 	return out
 }
 
 // extractAllSections outputs a section for EVERY heading in the document
 // Each section includes the heading, its content, and all subheadings with their content
-func extractAllSections(ctx context.Context, docNode *mdast.DocumentNode, documentId string, out chan<- SectionWithLevel) bool {
+func extractAllSections(ctx context.Context, docNode *mdast.DocumentNode, documentId string, out chan<- SectionWithLevel, sectionCount *int, totalOutputSize *uint64) bool {
 	children := docNode.Children()
 
 	for i := range children {
@@ -77,11 +98,16 @@ func extractAllSections(ctx context.Context, docNode *mdast.DocumentNode, docume
 		}
 
 		// Output the complete section for this heading with level information
+		sectionText := sb.String()
 		section := SectionWithLevel{
-			Text:       sb.String(),
+			Text:       sectionText,
 			Level:      heading.Level,
 			DocumentId: documentId,
 		}
+		
+		*sectionCount++
+		*totalOutputSize += uint64(len(sectionText))
+		
 		select {
 		case out <- section:
 		case <-ctx.Done():

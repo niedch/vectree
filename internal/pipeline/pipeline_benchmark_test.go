@@ -25,12 +25,48 @@ func createTempMarkdownFiles(b *testing.B, dir string, totalSizeMB int) {
 	err := os.MkdirAll(dir, 0755)
 	require.NoError(b, err)
 
-	content := strings.Repeat("# Markdown Content\n\nThis is a sample markdown file for benchmarking.\n", fileSize/69) // 69 bytes per line
+	// Create realistic hierarchical markdown content with nested sections
+	// This will demonstrate the AST splitter's duplication feature
+	sectionTemplate := `# Main Section %d
 
+This is the introduction to section %d with some context and overview information that will be duplicated across child sections.
+
+## Subsection %d.1
+
+Detailed content for subsection %d.1. This includes technical information, code examples, and explanations that are specific to this subsection.
+
+### Deep Subsection %d.1.1
+
+Even more detailed content at the third level. This demonstrates deep nesting and how the AST splitter handles multiple levels of hierarchy.
+
+## Subsection %d.2
+
+More detailed content for subsection %d.2. This section covers different aspects and includes additional examples and use cases.
+
+### Deep Subsection %d.2.1
+
+Additional deep content that shows how nested sections work in practice.
+
+## Subsection %d.3
+
+Final subsection with concluding remarks and additional information.
+
+`
+	
 	numFiles := totalSize / fileSize
 	for i := range numFiles {
+		// Generate content by repeating the section template
+		var contentBuilder strings.Builder
+		sectionsPerFile := fileSize / len(fmt.Sprintf(sectionTemplate, i, i, i, i, i, i, i, i, i, i))
+		for j := range sectionsPerFile {
+			sectionNum := i*sectionsPerFile + j
+			contentBuilder.WriteString(fmt.Sprintf(sectionTemplate, 
+				sectionNum, sectionNum, sectionNum, sectionNum, sectionNum, 
+				sectionNum, sectionNum, sectionNum, sectionNum, sectionNum))
+		}
+		
 		fileName := filepath.Join(dir, fmt.Sprintf("benchmark_file_%d.md", i))
-		err := os.WriteFile(fileName, []byte(content), 0644)
+		err := os.WriteFile(fileName, []byte(contentBuilder.String()), 0644)
 		require.NoError(b, err)
 	}
 }

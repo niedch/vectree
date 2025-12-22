@@ -2,6 +2,7 @@ package stages
 
 import (
 	"context"
+	"log"
 	"os"
 )
 
@@ -18,6 +19,8 @@ func (l FileLoader) Run(ctx context.Context, in <-chan string) <-chan string {
 
 	go func() {
 		defer close(out)
+		fileCount := 0
+		var totalSize uint64 = 0
 
 		for filePath := range in {
 			data, err := os.ReadFile(filePath)
@@ -29,12 +32,18 @@ func (l FileLoader) Run(ctx context.Context, in <-chan string) <-chan string {
 				continue;
 			}
 
+			fileCount++
+			totalSize += uint64(len(data))
+
 			select {
 			case out <- string(data):
 			case <-ctx.Done():
 				return
 			}
 		}
+
+		log.Printf("FileLoader: Loaded %d files, total size: %d bytes (%.2f MB)\n", 
+			fileCount, totalSize, float64(totalSize)/(1024*1024))
 	}()
 
 	return out

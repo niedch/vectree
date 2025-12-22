@@ -2,7 +2,6 @@ package store
 
 import (
 	"context"
-	"log"
 )
 
 type MockBenchmarkStore struct {
@@ -17,7 +16,6 @@ func (dc *MockBenchmarkStore) Initialize(ctx context.Context) error {
 }
 
 func (dc *MockBenchmarkStore) InsertChunks(ctx context.Context, chunks []Chunk) (int, error) {
-	log.Printf("Inserting %d Chunks", len(chunks))
 	return len(chunks), nil
 }
 

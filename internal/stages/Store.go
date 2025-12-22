@@ -30,9 +30,14 @@ func (s *Store) Run(ctx context.Context, in <-chan []*EmbedderOut) <-chan any {
 
 		count := 0
 		var size uint64 = 0
+		batchCount := 0
+		minChunkSize := int(^uint(0) >> 1) // max int
+		maxChunkSize := 0
+		var totalChunkSize uint64 = 0
 
 		for emb := range in {
 			embedderOut := emb
+			batchCount++
 
 			batchSize, chunks := convertEmbedderOutToChunks(embedderOut)
 			resultCount, err := s.datastore.InsertChunks(ctx, chunks)
@@ -43,6 +48,18 @@ func (s *Store) Run(ctx context.Context, in <-chan []*EmbedderOut) <-chan any {
 			size += uint64(batchSize)
 			count += resultCount
 
+			// Track chunk statistics
+			for _, chunk := range chunks {
+				chunkLen := len(chunk.Text)
+				totalChunkSize += uint64(chunkLen)
+				if chunkLen < minChunkSize {
+					minChunkSize = chunkLen
+				}
+				if chunkLen > maxChunkSize {
+					maxChunkSize = chunkLen
+				}
+			}
+
 			// Send a signal to output channel to keep pipeline alive
 			select {
 			case out <- count:
@@ -51,8 +68,14 @@ func (s *Store) Run(ctx context.Context, in <-chan []*EmbedderOut) <-chan any {
 			}
 		}
 
-		log.Printf("Stored %d embeddings\n", count)
-		log.Printf("BatchSize: %s\n", formatBytes(size))
+		avgChunkSize := float64(0)
+		if count > 0 {
+			avgChunkSize = float64(totalChunkSize) / float64(count)
+		}
+
+		log.Printf("Stored %d embeddings in %d batches\n", count, batchCount)
+		log.Printf("Total text size: %s (%d bytes)\n", formatBytes(size), size)
+		log.Printf("Chunk size stats - Min: %d, Max: %d, Avg: %.2f bytes\n", minChunkSize, maxChunkSize, avgChunkSize)
 	}()
 
 	return out
@@ -82,7 +105,9 @@ func convertEmbedderOutToChunks(anyArr []*EmbedderOut) (int, []store.Chunk) {
 			continue
 		}
 
-		batchSize += len(embedderOut.Chunk)
+		// Calculate text size in bytes
+		textSize := len(embedderOut.Chunk)
+		batchSize += textSize
 
 		chunks[idx] = store.Chunk{
 			Text:       embedderOut.Chunk,
