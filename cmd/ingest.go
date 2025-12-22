@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"context"
-	"log"
-	"sync"
 
 	"broadcom.com/vertex-ingestor/internal/ai"
 	"broadcom.com/vertex-ingestor/internal/conf"
@@ -49,7 +47,6 @@ The process runs asynchronously and waits for both pipelines to complete.`,
 		ctx := context.Background()
 		config := conf.Load()
 
-		log.Println(config)
 		embedder := ai.NewGeminiEmbedder(config.GEMINI_API_KEY, config.AI.EmbeddingModel)
 		embedder.Initialize(ctx)
 
@@ -61,61 +58,29 @@ The process runs asynchronously and waits for both pipelines to complete.`,
 		ds := datastore.NewSqliteDatastore(db)
 		store := store.NewSqliteStore(ds)
 
-		var wg sync.WaitGroup
+		markdownFilesP := pipeline.NewPipeline()
+		markdownFilesP.AddStage(pipeline.TypedStage(stages.NewDirLoader("../connectall")))
+		markdownFilesP.AddStage(pipeline.TypedStage(stages.NewNodeModulesFilter()))
+		markdownFilesP.AddStage(pipeline.TypedStage(stages.NewFileLoader()))
 
-		RunDocumentationPipelineAsync(ctx, &wg, config, embedder, store)
-		RunMarkdownPipelineAsync(ctx, &wg, config, embedder, store)
+		docuP := pipeline.NewPipeline()
+		docuP.AddStage(pipeline.TypedStage(stages.NewDocTocLoader(TOC_URL)))
+		docuP.AddStage(pipeline.TypedStage(stages.NewDebugStage()))
+		docuP.AddStage(pipeline.TypedStage(stages.NewContentLoader(config.Pipeline.DocuLoaderWorkers)))
 
-		wg.Wait()
+		main := pipeline.NewPipeline()
+		main.AddStage(pipeline.MergePipelines(markdownFilesP, docuP))
+		main.AddStage(pipeline.TypedStage(stages.NewMdAstSplitter()))
+		main.AddStage(pipeline.TypedStage(stages.NewBatcher[string](config.Pipeline.EmbedderBatchSize)))
+		main.AddStage(pipeline.TypedStage(stages.NewEmbedder(embedder, config.Pipeline.EmbedderWorkers)))
+		main.AddStage(pipeline.TypedStage(stages.NewBatcher[*stages.EmbedderOut](config.Pipeline.StoreBatchSize)))
+		main.AddStage(pipeline.TypedStage(stages.NewStore(store)))
+
+		out := main.Run(ctx)
+		for range out { }
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(ingestCmd)
-}
-
-func RunMarkdownPipelineAsync(ctx context.Context, wg *sync.WaitGroup, config *conf.Config, embedder ai.EmbeddingModel, store store.Datastore) {
-	wg.Add(1)
-
-	go func() {
-		p := pipeline.NewPipeline()
-		p.AddStage(pipeline.TypedStage(stages.NewDirLoader("../connectall")))
-		p.AddStage(pipeline.TypedStage(stages.NewNodeModulesFilter()))
-		p.AddStage(pipeline.TypedStage(stages.NewFileLoader()))
-		p.AddStage(pipeline.TypedStage(stages.NewMdAstSplitter()))
-		p.AddStage(pipeline.TypedStage(stages.NewBatcher[string](config.Pipeline.EmbedderBatchSize)))
-		p.AddStage(pipeline.TypedStage(stages.NewEmbedder(embedder, config.Pipeline.EmbedderWorkers)))
-		p.AddStage(pipeline.TypedStage(stages.NewBatcher[*stages.EmbedderOut](config.Pipeline.StoreBatchSize)))
-		p.AddStage(pipeline.TypedStage(stages.NewStore(store)))
-
-		out := p.Run(ctx)
-		for range out {
-			// Pipeline execution happens as we consume the output
-		}
-
-		wg.Done()
-	}()
-}
-
-func RunDocumentationPipelineAsync(ctx context.Context, wg *sync.WaitGroup, config *conf.Config, embedder ai.EmbeddingModel, store store.Datastore) {
-	wg.Add(1)
-
-	go func() {
-		p := pipeline.NewPipeline()
-		p.AddStage(pipeline.TypedStage(stages.NewDocTocLoader(TOC_URL)))
-		p.AddStage(pipeline.TypedStage(stages.NewDebugStage()))
-		p.AddStage(pipeline.TypedStage(stages.NewContentLoader(config.Pipeline.DocuLoaderWorkers)))
-		p.AddStage(pipeline.TypedStage(stages.NewMdAstSplitter()))
-		p.AddStage(pipeline.TypedStage(stages.NewBatcher[string](config.Pipeline.EmbedderBatchSize)))
-		p.AddStage(pipeline.TypedStage(stages.NewEmbedder(embedder, config.Pipeline.EmbedderWorkers)))
-		p.AddStage(pipeline.TypedStage(stages.NewBatcher[*stages.EmbedderOut](config.Pipeline.StoreBatchSize)))
-		p.AddStage(pipeline.TypedStage(stages.NewStore(store)))
-
-		out := p.Run(ctx)
-		for range out {
-			// Pipeline execution happens as we consume the output
-		}
-
-		wg.Done()
-	}()
 }
