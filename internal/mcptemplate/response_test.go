@@ -58,8 +58,14 @@ func TestBuildResponseStringEmpty(t *testing.T) {
 	docs := []datastore.DocumentWithEmbedding{}
 	result := BuildResponseString(docs)
 
-	if result != "" {
-		t.Errorf("Expected empty result for empty input, got: %q", result)
+	// Should still contain the tip even with no documents
+	if !strings.Contains(result, "💡 Tip:") {
+		t.Errorf("Expected result to contain tip, got: %q", result)
+	}
+	
+	// Should not contain any document results
+	if strings.Contains(result, "## Document Result") {
+		t.Errorf("Expected no document results for empty input, got: %q", result)
 	}
 }
 
@@ -79,9 +85,9 @@ func TestBuildResponseStringSingleDocument(t *testing.T) {
 
 	result := BuildResponseString(docs)
 
-	// Should not contain separator for single document
-	if strings.Contains(result, "---") {
-		t.Error("Single document result should not contain separator")
+	// Should contain the tip separator and final tip
+	if !strings.Contains(result, "💡 Tip:") {
+		t.Error("Result should contain the tip at the end")
 	}
 
 	// Should contain the document content and metadata

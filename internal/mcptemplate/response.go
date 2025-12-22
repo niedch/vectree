@@ -21,6 +21,12 @@ func BuildResponseString(docs []datastore.DocumentWithEmbedding) string {
 		"add": func(a, b int) int {
 			return a + b
 		},
+		"deref": func(ptr *int) int {
+			if ptr == nil {
+				return 0
+			}
+			return *ptr
+		},
 	}).Parse(mcpResponseTemplate)
 
 	if err != nil {

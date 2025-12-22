@@ -8,9 +8,11 @@ import (
 )
 
 type EmbedderOut struct {
-	Chunk  string
-	Vector []float32
-	Level  int
+	Chunk      string
+	Vector     []float32
+	Level      int
+	ParentId   *int
+	DocumentId string
 }
 
 type Embedder struct {
@@ -46,9 +48,11 @@ func (e Embedder) Run(ctx context.Context, in <-chan []SectionWithLevel) <-chan 
 			vector := emb
 
 			outputItem := &EmbedderOut{
-				Chunk:  section.Text,
-				Vector: vector,
-				Level:  section.Level,
+				Chunk:      section.Text,
+				Vector:     vector,
+				Level:      section.Level,
+				ParentId:   section.ParentId,
+				DocumentId: section.DocumentId,
 			}
 
 			select {

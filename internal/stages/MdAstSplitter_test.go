@@ -204,6 +204,10 @@ L4 content.`,
 				if results[i].Level != expected.Level {
 					t.Errorf("Output %d level mismatch.\nExpected: %d\nGot: %d", i, expected.Level, results[i].Level)
 				}
+				// DocumentId should be set (non-empty)
+				if results[i].DocumentId == "" {
+					t.Errorf("Output %d DocumentId should not be empty", i)
+				}
 			}
 		})
 	}
@@ -243,6 +247,9 @@ func TestMdAstSplitter_MultipleDocuments(t *testing.T) {
 		return
 	}
 
+	// Track document IDs to verify they're different for different documents
+	docIds := make(map[string]bool)
+	
 	for i, exp := range expected {
 		if results[i].Text != exp.Text {
 			t.Errorf("Output %d text mismatch.\nExpected: %q\nGot: %q", i, exp.Text, results[i].Text)
@@ -250,6 +257,16 @@ func TestMdAstSplitter_MultipleDocuments(t *testing.T) {
 		if results[i].Level != exp.Level {
 			t.Errorf("Output %d level mismatch.\nExpected: %d\nGot: %d", i, exp.Level, results[i].Level)
 		}
+		// DocumentId should be set (non-empty)
+		if results[i].DocumentId == "" {
+			t.Errorf("Output %d DocumentId should not be empty", i)
+		}
+		docIds[results[i].DocumentId] = true
+	}
+	
+	// We should have 3 different document IDs (one for each input document)
+	if len(docIds) != 3 {
+		t.Errorf("Expected 3 different document IDs, got %d", len(docIds))
 	}
 }
 

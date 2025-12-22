@@ -1,9 +1,10 @@
 package datastore
 
 type Document struct {
-	Id       int    `db:"id"`
-	Document string `db:"document"`
-	Level    int    `db:"level"`
+	Id       int     `db:"id"`
+	Document string  `db:"document"`
+	Level    int     `db:"level"`
+	ParentId *int    `db:"parent_id"` // Nullable parent reference
 }
 
 type Embedding struct {

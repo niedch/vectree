@@ -3,12 +3,16 @@ package stages
 import (
 	"broadcom.com/vertex-ingestor/internal/mdast"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"strings"
 )
 
 type SectionWithLevel struct {
-	Text  string
-	Level int
+	Text       string
+	Level      int
+	ParentId   *int
+	DocumentId string // Hash or identifier to track which document this section belongs to
 }
 
 type MdAstSplitter struct{}
@@ -22,10 +26,13 @@ func (s MdAstSplitter) Run(ctx context.Context, in <-chan string) <-chan Section
 	go func() {
 		defer close(out)
 		for doc := range in {
+			// Generate a unique document ID based on content hash
+			hash := sha256.Sum256([]byte(doc))
+			documentId := hex.EncodeToString(hash[:8]) // Use first 8 bytes for brevity
 
 			docNode := mdast.ParseMarkdown(doc)
 
-			if !extractAllSections(ctx, docNode, out) {
+			if !extractAllSections(ctx, docNode, documentId, out) {
 				return
 			}
 		}
@@ -35,7 +42,7 @@ func (s MdAstSplitter) Run(ctx context.Context, in <-chan string) <-chan Section
 
 // extractAllSections outputs a section for EVERY heading in the document
 // Each section includes the heading, its content, and all subheadings with their content
-func extractAllSections(ctx context.Context, docNode *mdast.DocumentNode, out chan<- SectionWithLevel) bool {
+func extractAllSections(ctx context.Context, docNode *mdast.DocumentNode, documentId string, out chan<- SectionWithLevel) bool {
 	children := docNode.Children()
 
 	for i := range children {
@@ -71,8 +78,9 @@ func extractAllSections(ctx context.Context, docNode *mdast.DocumentNode, out ch
 
 		// Output the complete section for this heading with level information
 		section := SectionWithLevel{
-			Text:  sb.String(),
-			Level: heading.Level,
+			Text:       sb.String(),
+			Level:      heading.Level,
+			DocumentId: documentId,
 		}
 		select {
 		case out <- section:

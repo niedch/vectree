@@ -22,14 +22,38 @@ func (s *SqliteStore) Initialize(ctx context.Context) error {
 
 // InsertChunks inserts multiple chunks (text + embeddings) into the database
 // Returns the number of successfully inserted chunks
+// This function maintains parent-child relationships based on heading levels within each document
 func (s *SqliteStore) InsertChunks(ctx context.Context, chunks []Chunk) (int, error) {
 	count := 0
 	
+	// Track the most recent document ID at each level for each source document
+	// parentStacks[documentId][level] = database document ID
+	parentStacks := make(map[string]map[int]int64)
+	
 	for _, chunk := range chunks {
+		// Get or create parent stack for this source document
+		parentStack, exists := parentStacks[chunk.DocumentId]
+		if !exists {
+			parentStack = make(map[int]int64)
+			parentStacks[chunk.DocumentId] = parentStack
+		}
+		
+		// Find the parent: the most recent document with a level less than current level
+		// within the same source document
+		var parentId *int
+		for level := chunk.Level - 1; level >= 1; level-- {
+			if docId, exists := parentStack[level]; exists {
+				parentIdInt := int(docId)
+				parentId = &parentIdInt
+				break
+			}
+		}
+		
 		// Create document and embedding objects
 		doc := datastore.Document{
 			Document: chunk.Text,
 			Level:    chunk.Level,
+			ParentId: parentId,
 		}
 		
 		emb := datastore.Embedding{
@@ -37,10 +61,13 @@ func (s *SqliteStore) InsertChunks(ctx context.Context, chunks []Chunk) (int, er
 		}
 		
 		// Insert the document with its embedding
-		_, err := s.datastore.InsertDocument(ctx, doc, emb)
+		docId, err := s.datastore.InsertDocument(ctx, doc, emb)
 		if err != nil {
 			return count, fmt.Errorf("failed to insert chunk: %w", err)
 		}
+		
+		// Update the parent stack for this level in this source document
+		parentStack[chunk.Level] = docId
 		
 		count++
 	}

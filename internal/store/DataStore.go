@@ -8,9 +8,11 @@ type SearchResult struct {
 }
 
 type Chunk struct {
-	Text   string
-	Vector []float32
-	Level  int
+	Text       string
+	Vector     []float32
+	Level      int
+	ParentId   *int   // Reference to parent document ID
+	DocumentId string // Identifier to track which source document this chunk belongs to
 }
 
 type Datastore interface {

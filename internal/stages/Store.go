@@ -85,9 +85,11 @@ func convertEmbedderOutToChunks(anyArr []*EmbedderOut) (int, []store.Chunk) {
 		batchSize += len(embedderOut.Chunk)
 
 		chunks[idx] = store.Chunk{
-			Text:   embedderOut.Chunk,
-			Vector: embedderOut.Vector,
-			Level:  embedderOut.Level,
+			Text:       embedderOut.Chunk,
+			Vector:     embedderOut.Vector,
+			Level:      embedderOut.Level,
+			ParentId:   embedderOut.ParentId,
+			DocumentId: embedderOut.DocumentId,
 		}
 	}
 

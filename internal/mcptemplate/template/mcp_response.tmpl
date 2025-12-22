@@ -9,9 +9,14 @@
 **Metadata:**
 - **Document ID:** {{ $doc.Document.Id }}
 - **Level:** {{ $doc.Document.Level }}
+- **Parent ID:** {{ if $doc.Document.ParentId }}{{ deref $doc.Document.ParentId }} _(Use `get-parent-context` tool with document-id={{ $doc.Document.Id }} for broader context)_{{ else }}None (root document){{ end }}
 
 **Content:**
 
 {{ $doc.Document.Document }}
 
 {{ end -}}
+
+---
+
+**💡 Tip:** To get more context about any document above, use the `get-parent-context` tool with the document's ID. This will retrieve the parent section or chapter, helping you understand the broader topic and surrounding information. For example: `get-parent-context` with `document-id=123` will return the parent document that contains document 123.
