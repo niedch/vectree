@@ -13,6 +13,7 @@ type Node interface {
 	Type() NodeType
 	Children() []Node
 	AddChild(Node)
+	ToMarkdown() string
 }
 
 type BaseNode struct {
@@ -29,9 +30,14 @@ func (n *BaseNode) AddChild(c Node)  {
 	}
 	n.children = append(n.children, c) 
 }
+func (n *BaseNode) ToMarkdown() string { return "" }
 
 type DocumentNode struct {
 	BaseNode
+}
+
+func (n *DocumentNode) ToMarkdown() string {
+	return nodeToMarkdown(n)
 }
 
 type HeadingNode struct {
@@ -39,11 +45,23 @@ type HeadingNode struct {
 	Level int
 }
 
+func (n *HeadingNode) ToMarkdown() string {
+	return nodeToMarkdown(n)
+}
+
 type ParagraphNode struct {
 	BaseNode
+}
+
+func (n *ParagraphNode) ToMarkdown() string {
+	return nodeToMarkdown(n)
 }
 
 type TextNode struct {
 	BaseNode
 	Content string
+}
+
+func (n *TextNode) ToMarkdown() string {
+	return nodeToMarkdown(n)
 }

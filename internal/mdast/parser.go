@@ -1,10 +1,5 @@
 package mdast
 
-import (
-	"strconv"
-	"strings"
-)
-
 func ParseMarkdown(markdown string) *DocumentNode {
 	tokens := Lex(markdown);
 	return Parse(tokens)
@@ -54,43 +49,5 @@ func Parse(tokens []Token) *DocumentNode {
 	}
 
 	return doc
-}
-
-func PrintAST(n Node, indent int) string {
-	var sb strings.Builder
-	printASTHelper(n, indent, &sb)
-	return sb.String()
-}
-
-func printASTHelper(n Node, indent int, sb *strings.Builder) {
-	// Write indentation directly without allocating a string
-	for range indent {
-		sb.WriteString("  ")
-	}
-
-	// Print node type with additional information
-	// Avoid fmt.Sprintf by building strings directly
-	switch node := n.(type) {
-	case *DocumentNode:
-		sb.WriteString("Document\n")
-	case *HeadingNode:
-		sb.WriteString("Heading (level=")
-		sb.WriteString(strconv.Itoa(node.Level))
-		sb.WriteString(")\n")
-	case *ParagraphNode:
-		sb.WriteString("Paragraph\n")
-	case *TextNode:
-		sb.WriteString("Text: \"")
-		sb.WriteString(node.Content)
-		sb.WriteString("\"\n")
-	default:
-		sb.WriteString(string(n.Type()))
-		sb.WriteByte('\n')
-	}
-
-	// Recursively print children
-	for _, c := range n.Children() {
-		printASTHelper(c, indent+1, sb)
-	}
 }
 
