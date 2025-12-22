@@ -2,7 +2,6 @@ package stages
 
 import (
 	"context"
-	"log"
 )
 
 type Batcher[T any] struct {
@@ -26,7 +25,6 @@ func (b Batcher[T]) Run(ctx context.Context, in <-chan T) <-chan []T {
 
 		batch := make([]T, 0, b.Size)
 		flush := func() bool {
-			log.Println("Flushing Batch", len(batch))
 			if len(batch) == 0 {
 				return true
 			}

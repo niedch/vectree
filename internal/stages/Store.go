@@ -42,6 +42,13 @@ func (s *Store) Run(ctx context.Context, in <-chan []*EmbedderOut) <-chan any {
 
 			size += uint64(batchSize)
 			count += resultCount
+
+			// Send a signal to output channel to keep pipeline alive
+			select {
+			case out <- count:
+			case <-ctx.Done():
+				return
+			}
 		}
 
 		log.Printf("Stored %d embeddings\n", count)

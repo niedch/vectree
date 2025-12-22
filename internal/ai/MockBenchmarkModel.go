@@ -26,8 +26,9 @@ func (ai *MockBenchmarkModel) GenerateEmbedding(ctx context.Context, text string
 }
 
 func (ai *MockBenchmarkModel) GenerateEmbeddings(ctx context.Context, text []string) ([][]float32, error) {
-	return [][]float32{
-		{0.1, 0.2, 0.3},
-		{0.1, 0.2, 0.3},
-	}, nil
+	embeddings := make([][]float32, len(text))
+	for i := range text {
+		embeddings[i] = []float32{0.1, 0.2, 0.3}
+	}
+	return embeddings, nil
 }
