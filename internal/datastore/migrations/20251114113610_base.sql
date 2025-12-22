@@ -5,7 +5,9 @@ SELECT 'up SQL query';
 
 CREATE TABLE IF NOT EXISTS document (
   id INTEGER PRIMARY KEY,
-  document TEXT
+  document TEXT,
+  level INTEGER DEFAULT 0,
+  parent_id INTEGER DEFAULT NULL
 );
 
 CREATE VIRTUAL TABLE IF NOT EXISTS embedding USING vec0(
@@ -23,11 +25,15 @@ CREATE TABLE IF NOT EXISTS document_embedding (
 -- Index for faster lookups by embedding_rowid
 CREATE INDEX IF NOT EXISTS idx_embedding_rowid ON document_embedding(embedding_rowid);
 
+-- Index for parent_id lookups
+CREATE INDEX IF NOT EXISTS idx_document_parent_id ON document(parent_id);
+
 -- +goose Down
 -- +goose StatementBegin
 SELECT 'down SQL query';
 -- +goose StatementEnd
 
+DROP INDEX IF EXISTS idx_document_parent_id;
 DROP INDEX IF EXISTS idx_embedding_rowid;
 DROP TABLE IF EXISTS document_embedding;
 DROP TABLE IF EXISTS embedding;
