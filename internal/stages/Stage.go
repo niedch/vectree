@@ -9,7 +9,14 @@ type Stage[IN any, OUT any] interface {
 	Run(ctx context.Context, in <-chan IN) <-chan OUT
 }
 
-// ParallelStage processes items from the input channel concurrently using the provided processor function
+type UntypedStage struct {
+	Runner func(ctx context.Context, in <-chan any) <-chan any
+}
+
+func (u UntypedStage) Run(ctx context.Context, in <-chan any) <-chan any {
+	return u.Runner(ctx, in)
+}
+
 func ParallelStage[IN any, OUT any](ctx context.Context, in <-chan IN, concurrency int, processor func(context.Context, IN) (OUT, bool)) <-chan OUT {
 	out := make(chan OUT)
 

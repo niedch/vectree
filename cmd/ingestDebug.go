@@ -24,13 +24,14 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 
-		p1 := pipeline.New(stages.NewDirLoader("./test_data/embedder"))
-		p2 := pipeline.AddStage(p1, stages.NewNodeModulesFilter())
-		p3 := pipeline.AddStage(p2, stages.NewFileLoader())
-		p4 := pipeline.AddStage(p3, stages.NewMdAstSplitter())
-		p5 := pipeline.AddStage(p4, stages.NewDebugStage())
+		p := pipeline.NewPipeline()
+		p.AddStage(pipeline.TypedStage(stages.NewDirLoader("./test_data/embedder")))
+		p.AddStage(pipeline.TypedStage(stages.NewDebugStage()))
 
-		p5.Run(ctx);
+		out := p.Run(ctx)
+		for range out {
+			// Pipeline execution happens as we consume the output
+		}
 	},
 }
 

@@ -22,8 +22,12 @@ func TestNewAndRunFirstStage(t *testing.T) {
 		stage1Ran = true
 	})
 
-	p := pipeline.New(stage1)
-	p.Run(ctx)
+	p := pipeline.NewPipeline()
+	p.AddStage(pipeline.TypedStage(stage1))
+	out := p.Run(ctx)
+	for range out {
+		// Pipeline execution happens as we consume the output
+	}
 
 	assert.True(t, stage1Ran, "expected the stage to be run, but it was not")
 }
@@ -52,9 +56,13 @@ func TestAddStagesAndExecution(t *testing.T) {
 		}
 	})
 
-	p1 := pipeline.New(stage1)
-	p2 := pipeline.AddStage(p1, stage2)
-	p2.Run(ctx)
+	p := pipeline.NewPipeline()
+	p.AddStage(pipeline.TypedStage(stage1))
+	p.AddStage(pipeline.TypedStage(stage2))
+	out := p.Run(ctx)
+	for range out {
+		// Pipeline execution happens as we consume the output
+	}
 
 	assert.True(t, stage1Ran, "expected stage1 to be run, but it was not")
 	assert.True(t, stage2Ran, "expected stage2 to be run, but it was not")

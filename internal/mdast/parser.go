@@ -64,7 +64,7 @@ func PrintAST(n Node, indent int) string {
 
 func printASTHelper(n Node, indent int, sb *strings.Builder) {
 	// Write indentation directly without allocating a string
-	for i := 0; i < indent; i++ {
+	for range indent {
 		sb.WriteString("  ")
 	}
 

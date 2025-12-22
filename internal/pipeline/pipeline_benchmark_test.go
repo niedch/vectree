@@ -62,16 +62,20 @@ func BenchmarkPipeline(b *testing.B) {
 
 	b.ResetTimer()
 	for b.Loop() {
-		p1 := New(stages.NewDirLoader(tmpDir))
-		p2 := AddStage(p1, stages.NewIndexFileFilter())
-		p3 := AddStage(p2, stages.NewFileLoader())
-		p4 := AddStage(p3, stages.NewMdAstSplitter())
-		p5 := AddStage(p4, stages.NewBatcher[string](64))
-		p6 := AddStage(p5, stages.NewEmbedder(benchmarkModel, 8))
-		p7 := AddStage(p6, stages.NewBatcher[*stages.EmbedderOut](64))
-		p8 := AddStage(p7, stages.NewStore(benchmarkStore))
+		p := NewPipeline()
+		p.AddStage(TypedStage(stages.NewDirLoader(tmpDir)))
+		p.AddStage(TypedStage(stages.NewIndexFileFilter()))
+		p.AddStage(TypedStage(stages.NewFileLoader()))
+		p.AddStage(TypedStage(stages.NewMdAstSplitter()))
+		p.AddStage(TypedStage(stages.NewBatcher[string](64)))
+		p.AddStage(TypedStage(stages.NewEmbedder(benchmarkModel, 8)))
+		p.AddStage(TypedStage(stages.NewBatcher[*stages.EmbedderOut](32)))
+		p.AddStage(TypedStage(stages.NewStore(benchmarkStore)))
 
 		// --- Run Pipeline ---
-		p8.Run(context.Background())
+		out := p.Run(context.Background())
+		for range out {
+			// Pipeline execution happens as we consume the output
+		}
 	}
 }

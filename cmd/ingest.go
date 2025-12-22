@@ -63,7 +63,7 @@ The process runs asynchronously and waits for both pipelines to complete.`,
 
 		var wg sync.WaitGroup
 
-		// RunDocumentationPipelineAsync(ctx, &wg, config, embedder, store)
+		RunDocumentationPipelineAsync(ctx, &wg, config, embedder, store)
 		RunMarkdownPipelineAsync(ctx, &wg, config, embedder, store)
 
 		wg.Wait()
@@ -78,15 +78,20 @@ func RunMarkdownPipelineAsync(ctx context.Context, wg *sync.WaitGroup, config *c
 	wg.Add(1)
 
 	go func() {
-		p1 := pipeline.New(stages.NewDirLoader("../connectall"))
-		p2 := pipeline.AddStage(p1, stages.NewNodeModulesFilter())
-		p3 := pipeline.AddStage(p2, stages.NewFileLoader())
-		p4 := pipeline.AddStage(p3, stages.NewHeaderSplitter())
-		p5 := pipeline.AddStage(p4, stages.NewBatcher[string](config.Pipeline.EmbedderBatchSize))
-		p6 := pipeline.AddStage(p5, stages.NewEmbedder(embedder, config.Pipeline.EmbedderWorkers))
-		p7 := pipeline.AddStage(p6, stages.NewBatcher[*stages.EmbedderOut](config.Pipeline.StoreBatchSize))
-		p8 := pipeline.AddStage(p7, stages.NewStore(store))
-		p8.Run(ctx)
+		p := pipeline.NewPipeline()
+		p.AddStage(pipeline.TypedStage(stages.NewDirLoader("../connectall")))
+		p.AddStage(pipeline.TypedStage(stages.NewNodeModulesFilter()))
+		p.AddStage(pipeline.TypedStage(stages.NewFileLoader()))
+		p.AddStage(pipeline.TypedStage(stages.NewHeaderSplitter()))
+		p.AddStage(pipeline.TypedStage(stages.NewBatcher[string](config.Pipeline.EmbedderBatchSize)))
+		p.AddStage(pipeline.TypedStage(stages.NewEmbedder(embedder, config.Pipeline.EmbedderWorkers)))
+		p.AddStage(pipeline.TypedStage(stages.NewBatcher[*stages.EmbedderOut](config.Pipeline.StoreBatchSize)))
+		p.AddStage(pipeline.TypedStage(stages.NewStore(store)))
+
+		out := p.Run(ctx)
+		for range out {
+			// Pipeline execution happens as we consume the output
+		}
 
 		wg.Done()
 	}()
@@ -96,14 +101,19 @@ func RunDocumentationPipelineAsync(ctx context.Context, wg *sync.WaitGroup, conf
 	wg.Add(1)
 
 	go func() {
-		p1 := pipeline.New(stages.NewDocTocLoader(TOC_URL))
-		p2 := pipeline.AddStage(p1, stages.NewDebugStage())
-		p3 := pipeline.AddStage(p2, stages.NewContentLoader(config.Pipeline.DocuLoaderWorkers))
-		p4 := pipeline.AddStage(p3, stages.NewBatcher[string](config.Pipeline.EmbedderBatchSize))
-		p5 := pipeline.AddStage(p4, stages.NewEmbedder(embedder, config.Pipeline.EmbedderWorkers))
-		p6 := pipeline.AddStage(p5, stages.NewBatcher[*stages.EmbedderOut](config.Pipeline.StoreBatchSize))
-		p7 := pipeline.AddStage(p6, stages.NewStore(store))
-		p7.Run(ctx)
+		p := pipeline.NewPipeline()
+		p.AddStage(pipeline.TypedStage(stages.NewDocTocLoader(TOC_URL)))
+		p.AddStage(pipeline.TypedStage(stages.NewDebugStage()))
+		p.AddStage(pipeline.TypedStage(stages.NewContentLoader(config.Pipeline.DocuLoaderWorkers)))
+		p.AddStage(pipeline.TypedStage(stages.NewBatcher[string](config.Pipeline.EmbedderBatchSize)))
+		p.AddStage(pipeline.TypedStage(stages.NewEmbedder(embedder, config.Pipeline.EmbedderWorkers)))
+		p.AddStage(pipeline.TypedStage(stages.NewBatcher[*stages.EmbedderOut](config.Pipeline.StoreBatchSize)))
+		p.AddStage(pipeline.TypedStage(stages.NewStore(store)))
+
+		out := p.Run(ctx)
+		for range out {
+			// Pipeline execution happens as we consume the output
+		}
 
 		wg.Done()
 	}()

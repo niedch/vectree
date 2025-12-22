@@ -6,33 +6,57 @@ import (
 	"broadcom.com/vertex-ingestor/internal/stages"
 )
 
-type Pipeline[OUT any] struct {
-	runner func(ctx context.Context, firstIn <-chan any) <-chan OUT
+type Pipeline struct {
+	stages []stages.Stage[any, any]
 }
 
-func New[OUT any](stage stages.Stage[any, OUT]) *Pipeline[OUT] {
-	return &Pipeline[OUT]{
-		runner: func(ctx context.Context, firstIn <-chan any) <-chan OUT {
-			return stage.Run(ctx, firstIn)
+func NewPipeline() *Pipeline {
+	return &Pipeline{}
+}
+
+func (p *Pipeline) AddStage(stage stages.Stage[any, any]) *Pipeline {
+	p.stages = append(p.stages, stage)
+	return p
+}
+
+func TypedStage[I any, O any](stage stages.Stage[I, O]) stages.UntypedStage {
+	return stages.UntypedStage{
+		Runner: func(ctx context.Context, in <-chan any) <-chan any {
+			inTyped := make(chan I)
+			
+			// Convert untyped input to typed input
+			go func() {
+				defer close(inTyped)
+				for v := range in {
+					inTyped <- v.(I)
+				}
+			}()
+
+			outTyped := stage.Run(ctx, inTyped)
+
+			// Convert typed output to untyped output
+			out := make(chan any)
+			go func() {
+				defer close(out)
+				for v := range outTyped {
+					out <- v
+				}
+			}()
+
+			return out
 		},
 	}
 }
 
-func AddStage[PREV_OUT any, NEW_OUT any](p *Pipeline[PREV_OUT], stage stages.Stage[PREV_OUT, NEW_OUT]) *Pipeline[NEW_OUT] {
-	return &Pipeline[NEW_OUT]{
-		runner: func(ctx context.Context, firstIn <-chan any) <-chan NEW_OUT {
-			// Get the output channel from the previously constructed pipeline part.
-			prevOutChan := p.runner(ctx, firstIn)
-			return stage.Run(ctx, prevOutChan)
-		},
+func (p *Pipeline) Run(ctx context.Context) <-chan any {
+	// Create and close initial empty channel to start the pipeline
+	initialCh := make(chan any)
+	close(initialCh)
+	
+	var ch <-chan any = initialCh
+	for _, stage := range p.stages {
+		ch = stage.Run(ctx, ch)
 	}
-}
 
-func (p *Pipeline[OUT]) Run(ctx context.Context) {
-	in := make(chan any)
-	close(in)
-
-	finalOut := p.runner(ctx, in)
-	for range finalOut {
-	}
+	return ch
 }
