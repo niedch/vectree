@@ -20,19 +20,27 @@ func TestEmbedder_Run(t *testing.T) {
 	}
 
 	// Create input and output channels
-	in := make(chan []string)
+	in := make(chan []SectionWithLevel)
 	out := embedder.Run(context.Background(), in)
 
 	// Test data
-	batch1 := []string{"text1", "text2"}
+	batch1 := []SectionWithLevel{
+		{Text: "text1", Level: 1},
+		{Text: "text2", Level: 2},
+	}
+	texts1 := []string{"text1", "text2"}
 	embeddings1 := [][]float32{{1.0, 2.0}, {3.0, 4.0}}
 
-	batch2 := []string{"text3", "text4"}
+	batch2 := []SectionWithLevel{
+		{Text: "text3", Level: 1},
+		{Text: "text4", Level: 3},
+	}
+	texts2 := []string{"text3", "text4"}
 	embeddings2 := [][]float32{{5.0, 6.0}, {7.0, 8.0}}
 
 	// Set up mock expectations
-	mockModel.On("GenerateEmbeddings", mock.Anything, batch1).Return(embeddings1, nil)
-	mockModel.On("GenerateEmbeddings", mock.Anything, batch2).Return(embeddings2, nil)
+	mockModel.On("GenerateEmbeddings", mock.Anything, texts1).Return(embeddings1, nil)
+	mockModel.On("GenerateEmbeddings", mock.Anything, texts2).Return(embeddings2, nil)
 
 	// Send test data to the input channel
 	go func() {
@@ -52,15 +60,19 @@ func TestEmbedder_Run(t *testing.T) {
 
 	assert.Equal(t, "text1", results[0].Chunk)
 	assert.Equal(t, embeddings1[0], results[0].Vector)
+	assert.Equal(t, 1, results[0].Level)
 
 	assert.Equal(t, "text2", results[1].Chunk)
 	assert.Equal(t, embeddings1[1], results[1].Vector)
+	assert.Equal(t, 2, results[1].Level)
 
 	assert.Equal(t, "text3", results[2].Chunk)
 	assert.Equal(t, embeddings2[0], results[2].Vector)
+	assert.Equal(t, 1, results[2].Level)
 
 	assert.Equal(t, "text4", results[3].Chunk)
 	assert.Equal(t, embeddings2[1], results[3].Vector)
+	assert.Equal(t, 3, results[3].Level)
 
 	// Assert that the mock's expectations were met
 	mockModel.AssertExpectations(t)

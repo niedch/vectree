@@ -1,0 +1,17 @@
+{{- range $index, $doc := . -}}
+{{- if $index }}
+
+---
+
+{{ end -}}
+## Document Result {{ add $index 1 }}
+
+**Metadata:**
+- **Document ID:** {{ $doc.Document.Id }}
+- **Level:** {{ $doc.Document.Level }}
+
+**Content:**
+
+{{ $doc.Document.Document }}
+
+{{ end -}}

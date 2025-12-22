@@ -61,7 +61,7 @@ func (ds *SqliteDatastore) InsertDocument(ctx context.Context, document Document
 	defer tx.Rollback()
 
 	// Insert document
-	result, err := tx.ExecContext(ctx, "INSERT INTO document (document) VALUES (?)", document.Document)
+	result, err := tx.ExecContext(ctx, "INSERT INTO document (document, level) VALUES (?, ?)", document.Document, document.Level)
 	if err != nil {
 		return 0, fmt.Errorf("failed to insert document: %w", err)
 	}
@@ -105,7 +105,7 @@ func (ds *SqliteDatastore) InsertDocument(ctx context.Context, document Document
 // GetDocument retrieves a document by ID
 func (ds *SqliteDatastore) GetDocument(ctx context.Context, id int) (*Document, error) {
 	var doc Document
-	err := ds.db.GetContext(ctx, &doc, "SELECT id, document FROM document WHERE id = ?", id)
+	err := ds.db.GetContext(ctx, &doc, "SELECT id, document, level FROM document WHERE id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("document not found: %d", id)
@@ -118,7 +118,7 @@ func (ds *SqliteDatastore) GetDocument(ctx context.Context, id int) (*Document, 
 // GetDocumentWithEmbedding retrieves a document with its embedding
 func (ds *SqliteDatastore) GetDocumentWithEmbedding(ctx context.Context, id int) (*DocumentWithEmbedding, error) {
 	query := `
-		SELECT d.id, d.document, e.embedding, de.embedding_rowid
+		SELECT d.id, d.document, d.level, e.embedding, de.embedding_rowid
 		FROM document d
 		JOIN document_embedding de ON d.id = de.document_id
 		JOIN embedding e ON e.rowid = de.embedding_rowid
@@ -128,6 +128,7 @@ func (ds *SqliteDatastore) GetDocumentWithEmbedding(ctx context.Context, id int)
 	var result struct {
 		Id             int    `db:"id"`
 		Document       string `db:"document"`
+		Level          int    `db:"level"`
 		EmbeddingBytes []byte `db:"embedding"`
 		EmbeddingRowid int64  `db:"embedding_rowid"`
 	}
@@ -150,6 +151,7 @@ func (ds *SqliteDatastore) GetDocumentWithEmbedding(ctx context.Context, id int)
 		Document: Document{
 			Id:       result.Id,
 			Document: result.Document,
+			Level:    result.Level,
 		},
 		Embedding:      embedding,
 		EmbeddingRowid: result.EmbeddingRowid,
@@ -238,7 +240,7 @@ func (ds *SqliteDatastore) DeleteDocument(ctx context.Context, id int) error {
 // SearchSimilarEmbeddings finds documents with similar embeddings using vector search
 func (ds *SqliteDatastore) SearchSimilarEmbeddings(ctx context.Context, queryVector []float32, limit int) ([]DocumentWithEmbedding, error) {
 	query := `
-		SELECT d.id, d.document, e.embedding, de.embedding_rowid,
+		SELECT d.id, d.document, d.level, e.embedding, de.embedding_rowid,
 		       vec_distance_cosine(e.embedding, ?) as distance
 		FROM embedding e
 		JOIN document_embedding de ON e.rowid = de.embedding_rowid
@@ -262,11 +264,12 @@ func (ds *SqliteDatastore) SearchSimilarEmbeddings(ctx context.Context, queryVec
 	for rows.Next() {
 		var id int
 		var document string
+		var level int
 		var embeddingBytes []byte
 		var embeddingRowid int64
 		var distance float64
 
-		if err := rows.Scan(&id, &document, &embeddingBytes, &embeddingRowid, &distance); err != nil {
+		if err := rows.Scan(&id, &document, &level, &embeddingBytes, &embeddingRowid, &distance); err != nil {
 			return nil, fmt.Errorf("failed to scan result row: %w", err)
 		}
 
@@ -279,6 +282,7 @@ func (ds *SqliteDatastore) SearchSimilarEmbeddings(ctx context.Context, queryVec
 			Document: Document{
 				Id:       id,
 				Document: document,
+				Level:    level,
 			},
 			Embedding:      embedding,
 			EmbeddingRowid: embeddingRowid,

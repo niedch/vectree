@@ -71,7 +71,7 @@ The process runs asynchronously and waits for both pipelines to complete.`,
 		main := pipeline.NewPipeline()
 		main.AddStage(pipeline.MergePipelines(markdownFilesP, docuP))
 		main.AddStage(pipeline.TypedStage(stages.NewMdAstSplitter()))
-		main.AddStage(pipeline.TypedStage(stages.NewBatcher[string](config.Pipeline.EmbedderBatchSize)))
+		main.AddStage(pipeline.TypedStage(stages.NewBatcher[stages.SectionWithLevel](config.Pipeline.EmbedderBatchSize)))
 		main.AddStage(pipeline.TypedStage(stages.NewEmbedder(embedder, config.Pipeline.EmbedderWorkers)))
 		main.AddStage(pipeline.TypedStage(stages.NewBatcher[*stages.EmbedderOut](config.Pipeline.StoreBatchSize)))
 		main.AddStage(pipeline.TypedStage(stages.NewStore(store)))

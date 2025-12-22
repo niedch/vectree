@@ -87,6 +87,7 @@ func convertEmbedderOutToChunks(anyArr []*EmbedderOut) (int, []store.Chunk) {
 		chunks[idx] = store.Chunk{
 			Text:   embedderOut.Chunk,
 			Vector: embedderOut.Vector,
+			Level:  embedderOut.Level,
 		}
 	}
 

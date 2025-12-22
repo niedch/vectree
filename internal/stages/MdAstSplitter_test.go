@@ -10,13 +10,13 @@ func TestMdAstSplitter_Run(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
-		expected []string
+		expected []SectionWithLevel
 	}{
 		{
 			name:  "Single heading",
 			input: "# Hello World",
-			expected: []string{
-				"# Hello World\n",
+			expected: []SectionWithLevel{
+				{Text: "# Hello World\n", Level: 1},
 			},
 		},
 		{
@@ -24,8 +24,8 @@ func TestMdAstSplitter_Run(t *testing.T) {
 			input: `# Title
 
 This is a paragraph.`,
-			expected: []string{
-				"# Title\nThis is a paragraph.\n",
+			expected: []SectionWithLevel{
+				{Text: "# Title\nThis is a paragraph.\n", Level: 1},
 			},
 		},
 		{
@@ -37,9 +37,9 @@ Paragraph one.
 # Title Two
 
 Paragraph two.`,
-			expected: []string{
-				"# Title One\nParagraph one.\n",
-				"# Title Two\nParagraph two.\n",
+			expected: []SectionWithLevel{
+				{Text: "# Title One\nParagraph one.\n", Level: 1},
+				{Text: "# Title Two\nParagraph two.\n", Level: 1},
 			},
 		},
 		{
@@ -59,11 +59,11 @@ Subsection content.
 ## Section Two
 
 Section two content.`,
-			expected: []string{
-				"# Main Title\nIntroduction paragraph.\n## Section One\nSection one content.\n### Subsection 1.1\nSubsection content.\n## Section Two\nSection two content.\n",
-				"## Section One\nSection one content.\n### Subsection 1.1\nSubsection content.\n",
-				"### Subsection 1.1\nSubsection content.\n",
-				"## Section Two\nSection two content.\n",
+			expected: []SectionWithLevel{
+				{Text: "# Main Title\nIntroduction paragraph.\n## Section One\nSection one content.\n### Subsection 1.1\nSubsection content.\n## Section Two\nSection two content.\n", Level: 1},
+				{Text: "## Section One\nSection one content.\n### Subsection 1.1\nSubsection content.\n", Level: 2},
+				{Text: "### Subsection 1.1\nSubsection content.\n", Level: 3},
+				{Text: "## Section Two\nSection two content.\n", Level: 2},
 			},
 		},
 		{
@@ -83,11 +83,11 @@ Second intro.
 ## Second Section
 
 Second section content.`,
-			expected: []string{
-				"# First Title\nFirst intro.\n## First Section\nFirst section content.\n",
-				"## First Section\nFirst section content.\n",
-				"# Second Title\nSecond intro.\n## Second Section\nSecond section content.\n",
-				"## Second Section\nSecond section content.\n",
+			expected: []SectionWithLevel{
+				{Text: "# First Title\nFirst intro.\n## First Section\nFirst section content.\n", Level: 1},
+				{Text: "## First Section\nFirst section content.\n", Level: 2},
+				{Text: "# Second Title\nSecond intro.\n## Second Section\nSecond section content.\n", Level: 1},
+				{Text: "## Second Section\nSecond section content.\n", Level: 2},
 			},
 		},
 		{
@@ -111,18 +111,18 @@ More details.
 ## Section Two
 
 Content for section two.`,
-			expected: []string{
-				"# Main Title\nFirst paragraph.\n## Section One\nContent for section one.\n### Subsection 1.1\nDetails here.\n### Subsection 1.2\nMore details.\n## Section Two\nContent for section two.\n",
-				"## Section One\nContent for section one.\n### Subsection 1.1\nDetails here.\n### Subsection 1.2\nMore details.\n",
-				"### Subsection 1.1\nDetails here.\n",
-				"### Subsection 1.2\nMore details.\n",
-				"## Section Two\nContent for section two.\n",
+			expected: []SectionWithLevel{
+				{Text: "# Main Title\nFirst paragraph.\n## Section One\nContent for section one.\n### Subsection 1.1\nDetails here.\n### Subsection 1.2\nMore details.\n## Section Two\nContent for section two.\n", Level: 1},
+				{Text: "## Section One\nContent for section one.\n### Subsection 1.1\nDetails here.\n### Subsection 1.2\nMore details.\n", Level: 2},
+				{Text: "### Subsection 1.1\nDetails here.\n", Level: 3},
+				{Text: "### Subsection 1.2\nMore details.\n", Level: 3},
+				{Text: "## Section Two\nContent for section two.\n", Level: 2},
 			},
 		},
 		{
 			name:     "No headings",
 			input:    "Just a paragraph with no headings.",
-			expected: []string{},
+			expected: []SectionWithLevel{},
 		},
 		{
 			name: "Multiple level 2 headings",
@@ -137,10 +137,10 @@ Content two.
 ## Section Three
 
 Content three.`,
-			expected: []string{
-				"## Section One\nContent one.\n",
-				"## Section Two\nContent two.\n",
-				"## Section Three\nContent three.\n",
+			expected: []SectionWithLevel{
+				{Text: "## Section One\nContent one.\n", Level: 2},
+				{Text: "## Section Two\nContent two.\n", Level: 2},
+				{Text: "## Section Three\nContent three.\n", Level: 2},
 			},
 		},
 		{
@@ -160,11 +160,11 @@ L3 content.
 #### Level 4
 
 L4 content.`,
-			expected: []string{
-				"# Level 1\nL1 content.\n## Level 2\nL2 content.\n### Level 3\nL3 content.\n#### Level 4\nL4 content.\n",
-				"## Level 2\nL2 content.\n### Level 3\nL3 content.\n#### Level 4\nL4 content.\n",
-				"### Level 3\nL3 content.\n#### Level 4\nL4 content.\n",
-				"#### Level 4\nL4 content.\n",
+			expected: []SectionWithLevel{
+				{Text: "# Level 1\nL1 content.\n## Level 2\nL2 content.\n### Level 3\nL3 content.\n#### Level 4\nL4 content.\n", Level: 1},
+				{Text: "## Level 2\nL2 content.\n### Level 3\nL3 content.\n#### Level 4\nL4 content.\n", Level: 2},
+				{Text: "### Level 3\nL3 content.\n#### Level 4\nL4 content.\n", Level: 3},
+				{Text: "#### Level 4\nL4 content.\n", Level: 4},
 			},
 		},
 	}
@@ -183,7 +183,7 @@ L4 content.`,
 			out := splitter.Run(ctx, in)
 
 			// Collect results
-			var results []string
+			var results []SectionWithLevel
 			for result := range out {
 				results = append(results, result)
 			}
@@ -198,8 +198,11 @@ L4 content.`,
 
 			// Verify each output
 			for i, expected := range tt.expected {
-				if results[i] != expected {
-					t.Errorf("Output %d mismatch.\nExpected: %q\nGot: %q", i, expected, results[i])
+				if results[i].Text != expected.Text {
+					t.Errorf("Output %d text mismatch.\nExpected: %q\nGot: %q", i, expected.Text, results[i].Text)
+				}
+				if results[i].Level != expected.Level {
+					t.Errorf("Output %d level mismatch.\nExpected: %d\nGot: %d", i, expected.Level, results[i].Level)
 				}
 			}
 		})
@@ -221,16 +224,16 @@ func TestMdAstSplitter_MultipleDocuments(t *testing.T) {
 	out := splitter.Run(ctx, in)
 
 	// Collect results
-	var results []string
+	var results []SectionWithLevel
 	for result := range out {
 		results = append(results, result)
 	}
 
-	expected := []string{
-		"# Doc 1\n",
-		"# Doc 2\nParagraph.\n## Subtitle\nMore content.\n",
-		"## Subtitle\nMore content.\n",
-		"# Doc 3\n",
+	expected := []SectionWithLevel{
+		{Text: "# Doc 1\n", Level: 1},
+		{Text: "# Doc 2\nParagraph.\n## Subtitle\nMore content.\n", Level: 1},
+		{Text: "## Subtitle\nMore content.\n", Level: 2},
+		{Text: "# Doc 3\n", Level: 1},
 	}
 
 	if len(results) != len(expected) {
@@ -241,8 +244,11 @@ func TestMdAstSplitter_MultipleDocuments(t *testing.T) {
 	}
 
 	for i, exp := range expected {
-		if results[i] != exp {
-			t.Errorf("Output %d mismatch.\nExpected: %q\nGot: %q", i, exp, results[i])
+		if results[i].Text != exp.Text {
+			t.Errorf("Output %d text mismatch.\nExpected: %q\nGot: %q", i, exp.Text, results[i].Text)
+		}
+		if results[i].Level != exp.Level {
+			t.Errorf("Output %d level mismatch.\nExpected: %d\nGot: %d", i, exp.Level, results[i].Level)
 		}
 	}
 }
@@ -300,7 +306,7 @@ func TestMdAstSplitter_EmptyInput(t *testing.T) {
 	out := splitter.Run(ctx, in)
 
 	// Collect results
-	var results []string
+	var results []SectionWithLevel
 	for result := range out {
 		results = append(results, result)
 	}

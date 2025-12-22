@@ -3,6 +3,7 @@ package datastore
 type Document struct {
 	Id       int    `db:"id"`
 	Document string `db:"document"`
+	Level    int    `db:"level"`
 }
 
 type Embedding struct {

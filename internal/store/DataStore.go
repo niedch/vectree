@@ -10,6 +10,7 @@ type SearchResult struct {
 type Chunk struct {
 	Text   string
 	Vector []float32
+	Level  int
 }
 
 type Datastore interface {

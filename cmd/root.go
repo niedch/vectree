@@ -2,9 +2,7 @@ package cmd
 
 import (
 	"os"
-	"strings"
 
-	"broadcom.com/vertex-ingestor/internal/datastore"
 	"github.com/spf13/cobra"
 )
 
@@ -40,13 +38,4 @@ func Execute() {
 
 func init() {
 	// Root command flags can be added here if needed
-}
-
-func buildResponseString(docs []datastore.DocumentWithEmbedding) string {
-	sb := strings.Builder{}
-	for _, doc := range docs {
-		sb.WriteString(doc.Document.Document)
-		sb.WriteString("\n")
-	}
-	return sb.String()
 }

@@ -8,6 +8,7 @@ import (
 	"broadcom.com/vertex-ingestor/internal/ai"
 	"broadcom.com/vertex-ingestor/internal/conf"
 	"broadcom.com/vertex-ingestor/internal/datastore"
+	"broadcom.com/vertex-ingestor/internal/mcptemplate"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/spf13/cobra"
@@ -76,7 +77,7 @@ Examples: 'How to configure authentication',
 				return mcp.NewToolResultError(err.Error()), nil
 			}
 
-			resultString := buildResponseString(docs)
+			resultString := mcptemplate.BuildResponseString(docs)
 
 			return mcp.NewToolResultText(resultString), nil
 		})

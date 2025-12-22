@@ -29,6 +29,7 @@ func (s *SqliteStore) InsertChunks(ctx context.Context, chunks []Chunk) (int, er
 		// Create document and embedding objects
 		doc := datastore.Document{
 			Document: chunk.Text,
+			Level:    chunk.Level,
 		}
 		
 		emb := datastore.Embedding{
