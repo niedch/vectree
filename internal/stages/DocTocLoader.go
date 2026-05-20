@@ -10,12 +10,14 @@ import (
 )
 
 type DocTocLoader struct {
-	url string
+	url        string
+	sourceName string
 }
 
-func NewDocTocLoader(url string) *DocTocLoader {
+func NewDocTocLoader(sourceName string, url string) *DocTocLoader {
 	return &DocTocLoader{
-		url: url,
+		sourceName: sourceName,
+		url:        url,
 	}
 }
 
@@ -33,6 +35,7 @@ func (l DocTocLoader) Run(ctx context.Context, _ <-chan any) <-chan string {
 	go func() {
 		defer close(out)
 
+		log.Printf("[%s] Started loading TOC", l.sourceName)
 		req, err := http.NewRequestWithContext(ctx, "GET", l.url, nil)
 		if err != nil {
 			log.Printf("Error creating request: %v", err)
@@ -69,11 +72,12 @@ func (l DocTocLoader) Run(ctx context.Context, _ <-chan any) <-chan string {
 			return
 		}
 
+		log.Printf("[%s] Loaded %d Links", l.sourceName, len(links))
 		// Send links to the output channel
 		for _, link := range links {
 			// Convert relative links to absolute URLs
 			absoluteURL := makeAbsoluteURL(baseURL, link)
-			
+
 			select {
 			case out <- absoluteURL:
 			case <-ctx.Done():
@@ -96,19 +100,19 @@ func (l DocTocLoader) getBaseURL() (string, error) {
 // extractAllLinks recursively extracts all links from TOC entries
 func extractAllLinks(entries []TOCEntry) []string {
 	var links []string
-	
+
 	for _, entry := range entries {
 		if entry.Link != "" {
 			links = append(links, entry.Link)
 		}
-		
+
 		// Recursively extract links from children
 		if len(entry.Children) > 0 {
 			childLinks := extractAllLinks(entry.Children)
 			links = append(links, childLinks...)
 		}
 	}
-	
+
 	return links
 }
 
@@ -116,10 +120,10 @@ func makeAbsoluteURL(baseURL, link string) string {
 	if strings.HasPrefix(link, "http://") || strings.HasPrefix(link, "https://") {
 		return link
 	}
-	
+
 	if strings.HasPrefix(link, "/") {
 		return baseURL + link
 	}
-	
+
 	return baseURL + "/" + link
 }

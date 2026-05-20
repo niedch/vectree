@@ -5,9 +5,10 @@ package cmd
 
 import (
 	"context"
+	"log"
 
+	"github.com/niedch/tree-rag/internal/conf"
 	"github.com/niedch/tree-rag/internal/pipeline"
-	"github.com/niedch/tree-rag/internal/stages"
 	"github.com/spf13/cobra"
 )
 
@@ -31,15 +32,30 @@ Example:
   connectall-doc-rag ingestDebug`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
+		
+		config := conf.Load()
+		pipelines, err := pipeline.NewPipelineBuilder(config).BuildAll();
+		if err != nil {
+			log.Fatalf("Failed to build Pipeline: %e", err)
+		}
 
-		p := pipeline.NewPipeline()
-		p.AddStage(pipeline.TypedStage(stages.NewDirLoader("./test_data/embedder")))
-		p.AddStage(pipeline.TypedStage(stages.NewDebugStage()))
 
-		out := p.Run(ctx)
+		ingestionPipeline := pipeline.NewPipeline()
+		ingestionPipeline.AddStage(pipeline.MergePipelines(pipelines))
+
+		out := ingestionPipeline.Run(ctx)
 		for range out {
 			// Pipeline execution happens as we consume the output
 		}
+
+		// p := pipeline.NewPipeline()
+		// p.AddStage(pipeline.TypedStage(stages.NewDirLoader("./test_data/embedder")))
+		// p.AddStage(pipeline.TypedStage(stages.NewDebugStage()))
+		//
+		// out := p.Run(ctx)
+		// for range out {
+		// 	// Pipeline execution happens as we consume the output
+		// }
 	},
 }
 

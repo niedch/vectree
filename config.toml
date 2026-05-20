@@ -1,3 +1,16 @@
+[sources.eddi-docs]
+type = "http"
+url = "https://docs.labs.ai"
+
+[sources.gemini-docs]
+type = "http"
+url = "https://ai.google.dev/gemini-api/docs"
+
+[sources.markdown]
+type = "markdown"
+location = "../test"
+
+
 [database]
 connection_string = "kownledgebase.db?cache=shared&mode=rw"
 

@@ -26,7 +26,7 @@ func TestDocTocLoader(t *testing.T) {
 	defer server.Close()
 
 	// Create the DocTocLoader with the TOC URL directly
-	loader := NewDocTocLoader(server.URL)
+	loader := NewDocTocLoader("Test", server.URL)
 
 	// Run the loader
 	ctx := context.Background()
@@ -55,7 +55,7 @@ func TestDocTocLoader_EmptyTOC(t *testing.T) {
 	}))
 	defer server.Close()
 
-	loader := NewDocTocLoader(server.URL)
+	loader := NewDocTocLoader("Test", server.URL)
 	ctx := context.Background()
 	out := loader.Run(ctx, nil)
 
@@ -88,7 +88,7 @@ func TestDocTocLoader_NestedChildren(t *testing.T) {
 	}))
 	defer server.Close()
 
-	loader := NewDocTocLoader(server.URL)
+	loader := NewDocTocLoader("Test", server.URL)
 	ctx := context.Background()
 	out := loader.Run(ctx, nil)
 
@@ -135,7 +135,7 @@ func TestDocTocLoader_DeeplyNestedChildren(t *testing.T) {
 	}))
 	defer server.Close()
 
-	loader := NewDocTocLoader(server.URL)
+	loader := NewDocTocLoader("Test", server.URL)
 	ctx := context.Background()
 	out := loader.Run(ctx, nil)
 
@@ -163,7 +163,7 @@ func TestDocTocLoader_ContextCancellation(t *testing.T) {
 	}))
 	defer server.Close()
 
-	loader := NewDocTocLoader(server.URL)
+	loader := NewDocTocLoader("Test", server.URL)
 	ctx, cancel := context.WithCancel(context.Background())
 	
 	out := loader.Run(ctx, nil)
@@ -191,7 +191,7 @@ func TestDocTocLoader_InvalidJSON(t *testing.T) {
 	}))
 	defer server.Close()
 
-	loader := NewDocTocLoader(server.URL)
+	loader := NewDocTocLoader("Test", server.URL)
 	ctx := context.Background()
 	out := loader.Run(ctx, nil)
 
@@ -209,7 +209,7 @@ func TestDocTocLoader_HTTPError(t *testing.T) {
 	}))
 	defer server.Close()
 
-	loader := NewDocTocLoader(server.URL)
+	loader := NewDocTocLoader("Test", server.URL)
 	ctx := context.Background()
 	out := loader.Run(ctx, nil)
 

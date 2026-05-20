@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"sync"
 
 	"github.com/niedch/tree-rag/internal/stages"
 )
@@ -44,56 +45,46 @@ func (m *MergeStage) Run(ctx context.Context, in <-chan any) <-chan any {
 // Merge merges two channels into a single output channel.
 // This is a helper function that can be used independently of the Stage interface.
 func Merge[T any](ctx context.Context, ch1, ch2 <-chan T) <-chan T {
+	return MergeAll(ctx, ch1, ch2)
+}
+
+// MergeAll merges multiple channels into a single output channel.
+func MergeAll[T any](ctx context.Context, channels ...<-chan T) <-chan T {
 	out := make(chan T)
 
 	go func() {
 		defer close(out)
 
-		// Use a done channel to track when both inputs are exhausted
-		done := make(chan struct{}, 2)
-
-		// Forward from first channel
-		go func() {
-			defer func() { done <- struct{}{} }()
-			for v := range ch1 {
-				select {
-				case out <- v:
-				case <-ctx.Done():
-					return
+		var wg sync.WaitGroup
+		for _, ch := range channels {
+			wg.Add(1)
+			go func(ch <-chan T) {
+				defer wg.Done()
+				for v := range ch {
+					select {
+					case out <- v:
+					case <-ctx.Done():
+						return
+					}
 				}
-			}
-		}()
+			}(ch)
+		}
 
-		// Forward from second channel
-		go func() {
-			defer func() { done <- struct{}{} }()
-			for v := range ch2 {
-				select {
-				case out <- v:
-				case <-ctx.Done():
-					return
-				}
-			}
-		}()
-
-		// Wait for both channels to be exhausted
-		<-done
-		<-done
+		wg.Wait()
 	}()
 
 	return out
 }
 
-// MergePipelines creates a stage that merges the outputs of two pipelines.
-func MergePipelines(pipeline1, pipeline2 *Pipeline) stages.UntypedStage {
+// MergePipelines creates a stage that merges the outputs of multiple pipelines.
+func MergePipelines(pipelines []*Pipeline) stages.UntypedStage {
 	return stages.UntypedStage{
 		Runner: func(ctx context.Context, in <-chan any) <-chan any {
-			// Run both pipelines
-			out1 := pipeline1.Run(ctx)
-			out2 := pipeline2.Run(ctx)
-
-			// Merge their outputs
-			return Merge(ctx, out1, out2)
+			var outs []<-chan any
+			for _, p := range pipelines {
+				outs = append(outs, p.Run(ctx))
+			}
+			return MergeAll(ctx, outs...)
 		},
 	}
 }

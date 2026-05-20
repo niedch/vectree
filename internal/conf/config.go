@@ -11,11 +11,13 @@ import (
 )
 
 type Config struct {
-	Database       Database  `koanf:"database"`
-	Pipeline       Pipeline  `koanf:"pipeline"`
-	AI             AI        `koanf:"ai"`
-	Retrieval      Retrieval `koanf:"retrieval"`
-	GEMINI_API_KEY string    `koanf:"GEMINI_API_KEY"`
+	Sources        map[string]Source `koanf:"sources"`
+	Database       Database          `koanf:"database"`
+	Pipeline       Pipeline          `koanf:"pipeline"`
+	AI             AI                `koanf:"ai"`
+	Retrieval      Retrieval         `koanf:"retrieval"`
+
+	GEMINI_API_KEY string            `koanf:"GEMINI_API_KEY"`
 }
 
 type Database struct {
@@ -23,7 +25,6 @@ type Database struct {
 }
 
 type Pipeline struct {
-	ConnectallPath    string `koanf:"connectall_path"`
 	EmbedderBatchSize int    `koanf:"embedder_batch_size"`
 	EmbedderWorkers   int    `koanf:"embedder_workers"`
 	StoreBatchSize    int    `koanf:"store_batch_size"`
@@ -51,6 +52,11 @@ func Load() *Config {
 		log.Fatalf("error unmarshaling config: %v", err)
 	}
 
+	for name, src := range cfg.Sources {
+		src.Name = name
+		cfg.Sources[name] = src
+	}
+
 	return &cfg
 }
 
@@ -60,7 +66,6 @@ func loadDefaults(k *koanf.Koanf) {
 			EmbeddingModel: "embedding-001",
 		},
 		Pipeline: Pipeline{
-			ConnectallPath:    "../connectall",
 			EmbedderBatchSize: 64,
 			EmbedderWorkers:   8,
 			StoreBatchSize:    8,

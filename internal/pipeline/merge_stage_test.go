@@ -118,7 +118,7 @@ func TestMergePipelines(t *testing.T) {
 
 	// Create a main pipeline with the merge stage
 	mainPipeline := pipeline.NewPipeline()
-	mainPipeline.AddStage(pipeline.MergePipelines(pipeline1, pipeline2))
+	mainPipeline.AddStage(pipeline.MergePipelines([]*pipeline.Pipeline{pipeline1, pipeline2}))
 
 	// Run and collect results
 	out := mainPipeline.Run(ctx)
@@ -181,7 +181,7 @@ func TestMergeEmptyChannels(t *testing.T) {
 	close(ch1)
 	close(ch2)
 
-	merged := pipeline.Merge(ctx, ch1, ch2)
+	merged := pipeline.MergeAll(ctx, ch1, ch2)
 
 	var results []int
 	for v := range merged {

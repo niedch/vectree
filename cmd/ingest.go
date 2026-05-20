@@ -71,12 +71,12 @@ Example:
 		markdownFilesP.AddStage(pipeline.TypedStage(stages.NewFileLoader()))
 
 		docuP := pipeline.NewPipeline()
-		docuP.AddStage(pipeline.TypedStage(stages.NewDocTocLoader(TOC_URL)))
+		docuP.AddStage(pipeline.TypedStage(stages.NewDocTocLoader("Connectall", TOC_URL)))
 		docuP.AddStage(pipeline.TypedStage(stages.NewDebugStage()))
 		docuP.AddStage(pipeline.TypedStage(stages.NewContentLoader(config.Pipeline.DocuLoaderWorkers)))
 
 		main := pipeline.NewPipeline()
-		main.AddStage(pipeline.MergePipelines(markdownFilesP, docuP))
+		main.AddStage(pipeline.MergePipelines([]*pipeline.Pipeline{markdownFilesP, docuP}))
 		main.AddStage(pipeline.TypedStage(stages.NewMdAstSplitter()))
 		main.AddStage(pipeline.TypedStage(stages.NewBatcher[stages.SectionWithLevel](config.Pipeline.EmbedderBatchSize)))
 		main.AddStage(pipeline.TypedStage(stages.NewEmbedder(embedder, config.Pipeline.EmbedderWorkers)))
