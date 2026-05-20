@@ -2,6 +2,7 @@ package stages
 
 import (
 	"context"
+	"sort"
 	"testing"
 	"time"
 
@@ -232,6 +233,14 @@ func TestMdAstSplitter_MultipleDocuments(t *testing.T) {
 	}
 
 	assert.Equal(t, len(expected), len(results), "Number of outputs mismatch")
+
+	// Sort by text to account for parallel processing order
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].Text < results[j].Text
+	})
+	sort.Slice(expected, func(i, j int) bool {
+		return expected[i].Text < expected[j].Text
+	})
 
 	// Track document IDs to verify they're different for different documents
 	docIds := make(map[string]bool)

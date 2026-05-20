@@ -4,7 +4,7 @@ import "strings"
 
 func Lex(input string) []Token {
 	lines := strings.Split(input, "\n")
-	var tokens []Token
+	tokens := make([]Token, 0, len(lines))
 
 	for _, line := range lines {
 		line = strings.TrimRight(line, " ")

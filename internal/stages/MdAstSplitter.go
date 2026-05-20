@@ -1,70 +1,50 @@
 package stages
 
 import (
-	"github.com/niedch/tree-rag/internal/mdast"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"log"
+	"runtime"
 	"strings"
+
+	"github.com/niedch/tree-rag/internal/mdast"
 )
 
 type SectionWithLevel struct {
 	Text       string
 	Level      int
 	ParentId   *int
-	DocumentId string // Hash or identifier to track which document this section belongs to
+	DocumentId string
 }
 
-type MdAstSplitter struct{}
+type MdAstSplitter struct {
+	workers int
+}
 
 func NewMdAstSplitter() *MdAstSplitter {
-	return &MdAstSplitter{}
+	return &MdAstSplitter{workers: runtime.NumCPU()}
+}
+
+func NewMdAstSplitterWithWorkers(n int) *MdAstSplitter {
+	if n <= 0 {
+		n = runtime.NumCPU()
+	}
+	return &MdAstSplitter{workers: n}
 }
 
 func (s MdAstSplitter) Run(ctx context.Context, in <-chan string) <-chan SectionWithLevel {
-	out := make(chan SectionWithLevel)
-	go func() {
-		defer close(out)
-		docCount := 0
-		var totalInputSize uint64 = 0
-		var totalOutputSize uint64 = 0
-		sectionCount := 0
-
-		for doc := range in {
-			docCount++
-			inputSize := len(doc)
-			totalInputSize += uint64(inputSize)
-
-			// Generate a unique document ID based on content hash
-			hash := sha256.Sum256([]byte(doc))
-			documentId := hex.EncodeToString(hash[:8]) // Use first 8 bytes for brevity
-
-			docNode := mdast.ParseMarkdown(doc)
-
-			if !extractAllSections(ctx, docNode, documentId, out, &sectionCount, &totalOutputSize) {
-				return
-			}
-
-			if docCount%100 == 0 {
-				log.Printf("MdAstSplitter: Processed %d documents, %d sections so far. Input: %d bytes, Output: %d bytes\n", 
-					docCount, sectionCount, totalInputSize, totalOutputSize)
-			}
-		}
-
-		log.Printf("MdAstSplitter: Total processed %d documents into %d sections\n", docCount, sectionCount)
-		log.Printf("MdAstSplitter: Input size: %d bytes (%.2f MB), Output size: %d bytes (%.2f MB)\n", 
-			totalInputSize, float64(totalInputSize)/(1024*1024), 
-			totalOutputSize, float64(totalOutputSize)/(1024*1024))
-		log.Printf("MdAstSplitter: Expansion ratio: %.2fx\n", float64(totalOutputSize)/float64(totalInputSize))
-	}()
-	return out
+	return WorkerPoolStage(ctx, in, s.workers, s.processDocument)
 }
 
-// extractAllSections outputs a section for EVERY heading in the document
-// Each section includes the heading, its content, and all subheadings with their content
-func extractAllSections(ctx context.Context, docNode *mdast.DocumentNode, documentId string, out chan<- SectionWithLevel, sectionCount *int, totalOutputSize *uint64) bool {
+func (s MdAstSplitter) processDocument(ctx context.Context, doc string, out chan<- SectionWithLevel) error {
+	hash := sha256.Sum256([]byte(doc))
+	documentId := hex.EncodeToString(hash[:8])
+
+	docNode := mdast.ParseMarkdown(doc)
 	children := docNode.Children()
+
+	var sb strings.Builder
+	sb.Grow(len(doc))
 
 	for i := range children {
 		heading, isHeading := children[i].(*mdast.HeadingNode)
@@ -72,48 +52,37 @@ func extractAllSections(ctx context.Context, docNode *mdast.DocumentNode, docume
 			continue
 		}
 
-		// Build a section for this heading
-		var sb strings.Builder
-		sb.WriteString(heading.ToMarkdown())
+		sb.Reset()
+		mdast.WriteMarkdown(heading, &sb)
 
-		// Collect all following content until we hit a heading of equal or higher level
 		j := i + 1
 		for j < len(children) {
 			nextNode := children[j]
 
-			// Check if it's a heading
 			if nextHeading, isNextHeading := nextNode.(*mdast.HeadingNode); isNextHeading {
-				// If it's a heading of equal or higher level (lower or equal number), stop
 				if nextHeading.Level <= heading.Level {
 					break
 				}
-				// Otherwise, it's a subheading - include it
-				sb.WriteString(nextHeading.ToMarkdown())
+				mdast.WriteMarkdown(nextHeading, &sb)
 			} else {
-				// It's a paragraph or other content - include it
-				sb.WriteString(nextNode.ToMarkdown())
+				mdast.WriteMarkdown(nextNode, &sb)
 			}
 
 			j++
 		}
 
-		// Output the complete section for this heading with level information
 		sectionText := sb.String()
-		section := SectionWithLevel{
+
+		select {
+		case out <- SectionWithLevel{
 			Text:       sectionText,
 			Level:      heading.Level,
 			DocumentId: documentId,
-		}
-		
-		*sectionCount++
-		*totalOutputSize += uint64(len(sectionText))
-		
-		select {
-		case out <- section:
+		}:
 		case <-ctx.Done():
-			return false
+			return ctx.Err()
 		}
 	}
 
-	return true
+	return nil
 }

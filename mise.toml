@@ -31,6 +31,7 @@ go mod tidy
 [tasks.benchmark]
 description = "Runs benchmark & open profiler"
 run = """
+mkdir -p target/
 go test -bench=. -benchmem -memprofile target/profile.out ./internal/pipeline
 go tool pprof -http=:8080 target/profile.out
 """

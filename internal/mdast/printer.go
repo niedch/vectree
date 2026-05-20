@@ -47,8 +47,13 @@ func printASTHelper(n Node, indent int, sb *strings.Builder) {
 // NodeToMarkdown converts a node and its children back to markdown format
 func NodeToMarkdown(n Node) string {
 	var sb strings.Builder
-	nodeToMarkdownHelper(n, &sb)
+	WriteMarkdown(n, &sb)
 	return sb.String()
+}
+
+// WriteMarkdown writes a node and its children directly into an existing builder.
+func WriteMarkdown(n Node, sb *strings.Builder) {
+	nodeToMarkdownHelper(n, sb)
 }
 
 // nodeToMarkdown is an exported wrapper for the internal helper
