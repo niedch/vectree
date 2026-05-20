@@ -52,19 +52,19 @@ Additional deep content that shows how nested sections work in practice.
 Final subsection with concluding remarks and additional information.
 
 `
-	
+
 	numFiles := totalSize / fileSize
 	for i := range numFiles {
 		// Generate content by repeating the section template
 		var contentBuilder strings.Builder
 		sectionsPerFile := fileSize / len(fmt.Sprintf(sectionTemplate, i, i, i, i, i, i, i, i, i, i))
 		for j := range sectionsPerFile {
-			sectionNum := i*sectionsPerFile + j
-			contentBuilder.WriteString(fmt.Sprintf(sectionTemplate, 
-				sectionNum, sectionNum, sectionNum, sectionNum, sectionNum, 
-				sectionNum, sectionNum, sectionNum, sectionNum, sectionNum))
+			sectionNum := i * sectionsPerFile + j
+			fmt.Fprintf(&contentBuilder, sectionTemplate,
+				sectionNum, sectionNum, sectionNum, sectionNum, sectionNum,
+				sectionNum, sectionNum, sectionNum, sectionNum, sectionNum)
 		}
-		
+
 		fileName := filepath.Join(dir, fmt.Sprintf("benchmark_file_%d.md", i))
 		err := os.WriteFile(fileName, []byte(contentBuilder.String()), 0644)
 		require.NoError(b, err)
@@ -94,7 +94,7 @@ func BenchmarkPipeline(b *testing.B) {
 	// mockStore.On("Initialize", mock.Anything).Return(nil)
 	// mockStore.On("InsertChunks", mock.Anything, mock.AnythingOfType("[]store.Chunk")).Return(32, nil)
 
-	benchmarkStore := store.NewMockBenchmarkStore();
+	benchmarkStore := store.NewMockBenchmarkStore()
 
 	b.ResetTimer()
 	for b.Loop() {

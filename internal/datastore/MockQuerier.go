@@ -298,6 +298,74 @@ func (_c *MockQuerier_GetEmbeddingsForDocument_Call) RunAndReturn(run func(ctx c
 	return _c
 }
 
+// GetParentDocument provides a mock function for the type MockQuerier
+func (_mock *MockQuerier) GetParentDocument(ctx context.Context, id int) (*Document, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetParentDocument")
+	}
+
+	var r0 *Document
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int) (*Document, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int) *Document); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*Document)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockQuerier_GetParentDocument_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetParentDocument'
+type MockQuerier_GetParentDocument_Call struct {
+	*mock.Call
+}
+
+// GetParentDocument is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id int
+func (_e *MockQuerier_Expecter) GetParentDocument(ctx interface{}, id interface{}) *MockQuerier_GetParentDocument_Call {
+	return &MockQuerier_GetParentDocument_Call{Call: _e.mock.On("GetParentDocument", ctx, id)}
+}
+
+func (_c *MockQuerier_GetParentDocument_Call) Run(run func(ctx context.Context, id int)) *MockQuerier_GetParentDocument_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int
+		if args[1] != nil {
+			arg1 = args[1].(int)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockQuerier_GetParentDocument_Call) Return(document *Document, err error) *MockQuerier_GetParentDocument_Call {
+	_c.Call.Return(document, err)
+	return _c
+}
+
+func (_c *MockQuerier_GetParentDocument_Call) RunAndReturn(run func(ctx context.Context, id int) (*Document, error)) *MockQuerier_GetParentDocument_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // InsertDocument provides a mock function for the type MockQuerier
 func (_mock *MockQuerier) InsertDocument(ctx context.Context, document Document, embedding Embedding) (int64, error) {
 	ret := _mock.Called(ctx, document, embedding)
