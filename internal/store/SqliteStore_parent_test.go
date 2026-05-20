@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"broadcom.com/vertex-ingestor/internal/conf"
-	"broadcom.com/vertex-ingestor/internal/datastore"
+	"github.com/niedch/tree-rag/internal/conf"
+	"github.com/niedch/tree-rag/internal/datastore"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

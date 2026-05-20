@@ -3,12 +3,12 @@ package cmd
 import (
 	"context"
 
-	"broadcom.com/vertex-ingestor/internal/ai"
-	"broadcom.com/vertex-ingestor/internal/conf"
-	"broadcom.com/vertex-ingestor/internal/datastore"
-	"broadcom.com/vertex-ingestor/internal/pipeline"
-	"broadcom.com/vertex-ingestor/internal/stages"
-	"broadcom.com/vertex-ingestor/internal/store"
+	"github.com/niedch/tree-rag/internal/ai"
+	"github.com/niedch/tree-rag/internal/conf"
+	"github.com/niedch/tree-rag/internal/datastore"
+	"github.com/niedch/tree-rag/internal/pipeline"
+	"github.com/niedch/tree-rag/internal/stages"
+	"github.com/niedch/tree-rag/internal/store"
 	"github.com/spf13/cobra"
 )
 

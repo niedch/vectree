@@ -3,7 +3,7 @@ package mcptemplate
 import (
 	"testing"
 
-	"broadcom.com/vertex-ingestor/internal/datastore"
+	"github.com/niedch/tree-rag/internal/datastore"
 	"github.com/stretchr/testify/assert"
 )
 

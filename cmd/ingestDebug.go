@@ -6,8 +6,8 @@ package cmd
 import (
 	"context"
 
-	"broadcom.com/vertex-ingestor/internal/pipeline"
-	"broadcom.com/vertex-ingestor/internal/stages"
+	"github.com/niedch/tree-rag/internal/pipeline"
+	"github.com/niedch/tree-rag/internal/stages"
 	"github.com/spf13/cobra"
 )
 

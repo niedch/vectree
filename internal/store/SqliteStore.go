@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"broadcom.com/vertex-ingestor/internal/datastore"
+	"github.com/niedch/tree-rag/internal/datastore"
 )
 
 type SqliteStore struct {

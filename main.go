@@ -1,6 +1,6 @@
 package main
 
-import "broadcom.com/vertex-ingestor/cmd"
+import "github.com/niedch/tree-rag/cmd"
 
 func main() {
 	cmd.Execute()

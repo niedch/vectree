@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"broadcom.com/vertex-ingestor/internal/pipeline"
-	"broadcom.com/vertex-ingestor/internal/stages"
+	"github.com/niedch/tree-rag/internal/pipeline"
+	"github.com/niedch/tree-rag/internal/stages"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

@@ -1,0 +1,8 @@
+[tools]
+go = "1.26.1"
+"go:github.com/spf13/cobra-cli" = "latest"
+
+[tasks.test]
+description = "Tests the Pipeline"
+run = "go test ./... -v"
+

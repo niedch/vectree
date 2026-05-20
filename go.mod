@@ -1,4 +1,4 @@
-module broadcom.com/vertex-ingestor
+module github.com/niedch/tree-rag
 
 go 1.24.2
 

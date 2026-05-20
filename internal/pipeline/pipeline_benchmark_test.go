@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"broadcom.com/vertex-ingestor/internal/ai"
-	"broadcom.com/vertex-ingestor/internal/stages"
-	"broadcom.com/vertex-ingestor/internal/store"
+	"github.com/niedch/tree-rag/internal/ai"
+	"github.com/niedch/tree-rag/internal/stages"
+	"github.com/niedch/tree-rag/internal/store"
 	"github.com/stretchr/testify/require"
 )
 

@@ -3,7 +3,7 @@ package pipeline
 import (
 	"context"
 
-	"broadcom.com/vertex-ingestor/internal/stages"
+	"github.com/niedch/tree-rag/internal/stages"
 )
 
 type Pipeline struct {

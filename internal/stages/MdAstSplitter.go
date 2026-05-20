@@ -1,7 +1,7 @@
 package stages
 
 import (
-	"broadcom.com/vertex-ingestor/internal/mdast"
+	"github.com/niedch/tree-rag/internal/mdast"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"

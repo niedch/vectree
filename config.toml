@@ -2,7 +2,6 @@
 connection_string = "kownledgebase.db?cache=shared&mode=rw"
 
 [pipeline]
-connectall_path = "../connectall"
 embedder_batch_size = 64
 embedder_workers = 8
 store_batch_size = 64

@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"broadcom.com/vertex-ingestor/internal/ai"
+	"github.com/niedch/tree-rag/internal/ai"
 )
 
 type EmbedderOut struct {

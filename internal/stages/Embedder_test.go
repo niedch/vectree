@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"broadcom.com/vertex-ingestor/internal/ai"
+	"github.com/niedch/tree-rag/internal/ai"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

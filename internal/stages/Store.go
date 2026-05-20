@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"broadcom.com/vertex-ingestor/internal/store"
+	"github.com/niedch/tree-rag/internal/store"
 )
 
 type Store struct {

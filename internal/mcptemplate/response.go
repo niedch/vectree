@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/template"
 
-	"broadcom.com/vertex-ingestor/internal/datastore"
+	"github.com/niedch/tree-rag/internal/datastore"
 )
 
 //go:embed template/mcp_response.tmpl
