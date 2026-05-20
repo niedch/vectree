@@ -21,6 +21,13 @@ run = "go build -o target/tree-rag ."
 description = "Run dev build"
 run = "go run ."
 
+[tasks.update-deps]
+description = "Updates all dependencies"
+run = """
+go get -u
+go mod tidy
+"""
+
 [tasks.benchmark]
 description = "Runs benchmark & open profiler"
 run = """
