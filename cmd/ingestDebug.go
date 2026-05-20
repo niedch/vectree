@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/niedch/tree-rag/internal/conf"
@@ -39,13 +40,12 @@ Example:
 			log.Fatalf("Failed to build Pipeline: %e", err)
 		}
 
-
 		ingestionPipeline := pipeline.NewPipeline()
 		ingestionPipeline.AddStage(pipeline.MergePipelines(pipelines))
 
 		out := ingestionPipeline.Run(ctx)
-		for range out {
-			// Pipeline execution happens as we consume the output
+		for i := range out {
+			fmt.Printf("%s", i)
 		}
 
 		// p := pipeline.NewPipeline()

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"slices"
 	"strings"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
@@ -28,16 +29,16 @@ func NewContentLoader(concurrency int) *ContentLoader {
 
 func (l ContentLoader) Run(ctx context.Context, in <-chan string) <-chan string {
 	out := make(chan string)
-	
+
 	go func() {
 		defer close(out)
-		
+
 		urlCount := 0
 		var totalSize uint64 = 0
-		
+
 		innerOut := ParallelStage(ctx, in, l.concurrency, func(ctx context.Context, url string) (string, bool) {
 			content, err := l.fetchAndExtractMain(ctx, url)
-			
+
 			if err != nil {
 				return "", false
 			}
@@ -48,22 +49,22 @@ func (l ContentLoader) Run(ctx context.Context, in <-chan string) <-chan string 
 
 			return content, true
 		})
-		
+
 		for content := range innerOut {
 			urlCount++
 			totalSize += uint64(len(content))
-			
+
 			select {
 			case out <- content:
 			case <-ctx.Done():
 				return
 			}
 		}
-		
-		log.Printf("ContentLoader: Loaded %d URLs, total size: %d bytes (%.2f MB)\n", 
+
+		log.Printf("ContentLoader: Loaded %d URLs, total size: %d bytes (%.2f MB)\n",
 			urlCount, totalSize, float64(totalSize)/(1024*1024))
 	}()
-	
+
 	return out
 }
 
@@ -93,7 +94,7 @@ func (l ContentLoader) fetchAndExtractMain(ctx context.Context, url string) (str
 	}
 
 	mainContent := l.extractMainContent(doc)
-	
+
 	if mainContent == "" {
 		log.Printf("Warning: No <main> tag found in %s", url)
 	}
@@ -111,7 +112,7 @@ func (l ContentLoader) extractMainContent(n *html.Node) string {
 }
 
 func findMainTag(n *html.Node) *html.Node {
-	if n.Type == html.ElementNode && n.Data == "main" {
+	if n.Type == html.ElementNode && (n.Data == "main" || hasClass(n, "main-content")) {
 		return n
 	}
 
@@ -124,18 +125,32 @@ func findMainTag(n *html.Node) *html.Node {
 	return nil
 }
 
+func hasClass(n *html.Node, class string) bool {
+	for _, attr := range n.Attr {
+		if attr.Key != "class" {
+			continue;
+		}
+
+		if slices.Contains(strings.Fields(attr.Val), class) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (l ContentLoader) htmlNodeToMarkdown(n *html.Node) string {
 	// Convert the html.Node to an HTML string
 	var sb strings.Builder
 	html.Render(&sb, n)
 	htmlContent := sb.String()
-	
+
 	// Convert HTML to Markdown using the library
 	markdown, err := l.converter.ConvertString(htmlContent)
 	if err != nil {
 		log.Printf("Error converting HTML to Markdown: %v", err)
 		return ""
 	}
-	
+
 	return strings.TrimSpace(markdown)
 }
