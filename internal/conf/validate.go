@@ -16,11 +16,34 @@ func validateConfig(cfg *Config) error {
 		return err
 	}
 
+	if err := validateAI(cfg.AI); err != nil {
+		return err
+	}
+
 	err := validate.Struct(cfg)
 	if err != nil {
 		return fmt.Errorf("config: %w", err)
 	}
 
+	return nil
+}
+
+func validateAI(ai AI) error {
+	var typed any
+	switch ai.Provider {
+	case GEMINI_PROVIDER:
+		typed = ai.AsGeminiProviderConfig()
+	case OPENAI_PROVIDER:
+		typed = ai.AsOpenAIProviderConfig()
+	case OLLAMA_PROVIDER:
+		typed = ai.AsOllamaProviderConfig()
+	default:
+		return fmt.Errorf("ai: provider %q is invalid", ai.Provider)
+	}
+
+	if errs := validateTyped("ai", typed); len(errs) > 0 {
+		return fmt.Errorf("\n\t%s", strings.Join(errs, "\n\t"))
+	}
 	return nil
 }
 
@@ -31,21 +54,13 @@ func validateSources(sources map[string]Source) error {
 
 	var errs []string
 	for name, src := range sources {
-		var err error
 		switch src.Type {
 		case HTTP_SOURCE_TYPE:
-			err = validate.Struct(src.AsHttp())
+			errs = append(errs, validateTyped(fmt.Sprintf("source %q", name), src.AsHttp())...)
 		case MARKDOWN_SOURCE_TYPE:
-			err = validate.Struct(src.AsMarkdown())
+			errs = append(errs, validateTyped(fmt.Sprintf("source %q", name), src.AsMarkdown())...)
 		default:
 			errs = append(errs, fmt.Sprintf("source %q: type %q is invalid", name, src.Type))
-			continue
-		}
-
-		if err != nil {
-			for _, fe := range err.(validator.ValidationErrors) {
-				errs = append(errs, fmt.Sprintf("source %q: %s", name, fmtErr(fe)))
-			}
 		}
 	}
 
@@ -53,6 +68,18 @@ func validateSources(sources map[string]Source) error {
 		return fmt.Errorf("\n\t%s", strings.Join(errs, "\n\t"))
 	}
 	return nil
+}
+
+func validateTyped(prefix string, v any) []string {
+	err := validate.Struct(v)
+	if err == nil {
+		return nil
+	}
+	var errs []string
+	for _, fe := range err.(validator.ValidationErrors) {
+		errs = append(errs, fmt.Sprintf("%s: %s", prefix, fmtErr(fe)))
+	}
+	return errs
 }
 
 func fmtErr(err validator.FieldError) string {

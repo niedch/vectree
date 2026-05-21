@@ -31,10 +31,6 @@ type Pipeline struct {
 	DocuLoaderWorkers int    `koanf:"docu_loader_workers"`
 }
 
-type AI struct {
-	EmbeddingModel string `koanf:"embedding_model"`
-}
-
 type Retrieval struct {
 	SimilarityResults int `koanf:"similarity_results"`
 }
@@ -75,6 +71,8 @@ func loadDefaults(k *koanf.Koanf) {
 	k.Load(structs.Provider(Config{
 		AI: AI{
 			EmbeddingModel: "text_embedding_004",
+			VertexSize:     768,
+			Provider:       GEMINI_PROVIDER,
 		},
 		Pipeline: Pipeline{
 			EmbedderBatchSize: 64,
@@ -85,7 +83,7 @@ func loadDefaults(k *koanf.Koanf) {
 		Database: Database{
 			ConnectionString: "kownledgebase.db?cache=shared&mode=rw",
 		},
-	}, "."), nil)
+	}, "koanf"), nil)
 }
 
 func loadEnvironment(k *koanf.Koanf) {
