@@ -65,7 +65,7 @@ func TestMarkdownNeedsToPointToAFolder(t *testing.T) {
 	config_str := `
 [sources.tech-docs]
 type = "markdown"
-location = "internal/adsf"
+location = "internal/conf/"
 	`
 	_, err = f.WriteString(config_str)
 	require.NoError(t, err)
