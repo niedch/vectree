@@ -77,7 +77,10 @@ Example:
 		}
 		ds := datastore.NewSqliteDatastore(db)
 
-		model := ai.NewGeminiEmbedder(config.GEMINI_API_KEY, config.AI.EmbeddingModel)
+		model, err := ai.NewGeminiEmbedder(context.Background(), config.GEMINI_API_KEY, config.AI.EmbeddingModel)
+		if err != nil {
+			log.Fatal("Error initializing embedding model: ", err)
+		}
 
 		// Add documentation search tool
 		researchTool := mcp.NewTool("search-documentation",
@@ -99,8 +102,6 @@ Examples: 'How to configure authentication',
 			if err != nil {
 				return mcp.NewToolResultError(err.Error()), nil
 			}
-
-			model.Initialize(ctx)
 
 			emb, err := model.GenerateEmbedding(ctx, searchString)
 			if err != nil {

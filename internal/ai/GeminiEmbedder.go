@@ -14,31 +14,24 @@ type GeminiEmbedder struct {
 	Client         *genai.Client
 }
 
-func NewGeminiEmbedder(apikey string, embeddingModel string) *GeminiEmbedder {
+func NewGeminiEmbedder(ctx context.Context, apikey string, embeddingModel string) (*GeminiEmbedder, error) {
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{APIKey: apikey})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create gemini client: %w", err)
+	}
+
 	return &GeminiEmbedder{
 		embeddingModel: embeddingModel,
 		apikey:         apikey,
-	}
+		Client:         client,
+	}, nil
 }
 
 func (ai *GeminiEmbedder) ModelId() string {
 	return ai.embeddingModel
 }
 
-func (ai *GeminiEmbedder) Initialize(ctx context.Context) {
-	client, err := genai.NewClient(ctx, &genai.ClientConfig{APIKey: ai.apikey})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ai.Client = client
-}
-
 func (ai *GeminiEmbedder) GenerateEmbedding(ctx context.Context, text string) ([]float32, error) {
-	if ai.Client == nil {
-		return nil, fmt.Errorf("Model or Client has not be initialized")
-	}
-
 	contents := []*genai.Content{
 		genai.NewContentFromText(text, genai.RoleUser),
 	}
@@ -48,10 +41,6 @@ func (ai *GeminiEmbedder) GenerateEmbedding(ctx context.Context, text string) ([
 }
 
 func (ai *GeminiEmbedder) GenerateEmbeddings(ctx context.Context, text []string) ([][]float32, error) {
-	if ai.Client == nil {
-		return nil, fmt.Errorf("Model or Client has not be initialized")
-	}
-
 	contents := ai.GetContents(text)
 	result := ai.callEmbedding(ctx, contents)
 

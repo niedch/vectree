@@ -58,8 +58,10 @@ Example:
 			log.Fatal("Error loading config: ", err)
 		}
 
-		embedder := ai.NewGeminiEmbedder(config.GEMINI_API_KEY, config.AI.EmbeddingModel)
-		embedder.Initialize(ctx)
+		embedder, err := ai.NewGeminiEmbedder(ctx, config.GEMINI_API_KEY, config.AI.EmbeddingModel)
+		if err != nil {
+			log.Fatal("Error initializing embedding model: ", err)
+		}
 
 		db, err := datastore.OpenConnection(config)
 		if err != nil {
@@ -69,18 +71,13 @@ Example:
 		ds := datastore.NewSqliteDatastore(db)
 		store := store.NewSqliteStore(ds)
 
-		markdownFilesP := pipeline.NewPipeline()
-		markdownFilesP.AddStage(pipeline.TypedStage(stages.NewDirLoader("../connectall")))
-		markdownFilesP.AddStage(pipeline.TypedStage(stages.NewNodeModulesFilter()))
-		markdownFilesP.AddStage(pipeline.TypedStage(stages.NewFileLoader()))
-
-		docuP := pipeline.NewPipeline()
-		docuP.AddStage(pipeline.TypedStage(stages.NewDocTocLoader("Connectall", TOC_URL)))
-		docuP.AddStage(pipeline.TypedStage(stages.NewDebugStage()))
-		docuP.AddStage(pipeline.TypedStage(stages.NewContentLoader(config.Pipeline.DocuLoaderWorkers)))
+		pipelines, err := pipeline.NewPipelineBuilder(config).BuildAll();
+		if err != nil {
+			log.Fatalf("Failed to build Pipeline: %e", err)
+		}
 
 		main := pipeline.NewPipeline()
-		main.AddStage(pipeline.MergePipelines([]*pipeline.Pipeline{markdownFilesP, docuP}))
+		main.AddStage(pipeline.MergePipelines(pipelines))
 		main.AddStage(pipeline.TypedStage(stages.NewMdAstSplitter()))
 		main.AddStage(pipeline.TypedStage(stages.NewBatcher[stages.SectionWithLevel](config.Pipeline.EmbedderBatchSize)))
 		main.AddStage(pipeline.TypedStage(stages.NewEmbedder(embedder, config.Pipeline.EmbedderWorkers)))
