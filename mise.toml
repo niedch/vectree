@@ -35,6 +35,12 @@ go get -u
 go mod tidy
 """
 
+[tasks.format]
+description = "Runs formatting across go project"
+run = """
+go fmt ./...
+"""
+
 [tasks.benchmark]
 description = "Runs benchmark & open profiler"
 run = """

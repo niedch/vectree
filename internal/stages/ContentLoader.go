@@ -128,7 +128,7 @@ func findMainTag(n *html.Node) *html.Node {
 func hasClass(n *html.Node, class string) bool {
 	for _, attr := range n.Attr {
 		if attr.Key != "class" {
-			continue;
+			continue
 		}
 
 		if slices.Contains(strings.Fields(attr.Val), class) {

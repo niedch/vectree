@@ -33,13 +33,13 @@ Example:
   connectall-doc-rag ingestDebug`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		
+
 		config, err := conf.Load()
 		if err != nil {
 			log.Fatal("Error loading config: ", err)
 		}
 
-		pipelines, err := pipeline.NewPipelineBuilder(config).BuildAll();
+		pipelines, err := pipeline.NewPipelineBuilder(config).BuildAll()
 		if err != nil {
 			log.Fatalf("Failed to build Pipeline: %e", err)
 		}

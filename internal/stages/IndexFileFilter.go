@@ -23,7 +23,7 @@ func (l IndexFileFilter) Run(ctx context.Context, in <-chan string) <-chan strin
 		for filePath := range in {
 			if strings.Contains(filePath, "!") {
 				log.Println("Ignoring File", filePath)
-				continue;
+				continue
 			}
 
 			select {

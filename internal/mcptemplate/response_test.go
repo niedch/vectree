@@ -58,7 +58,7 @@ func TestBuildResponseStringEmpty(t *testing.T) {
 
 	// Should still contain the tip even with no documents
 	assert.Contains(t, result, "💡 Tip:", "Expected result to contain tip")
-	
+
 	// Should not contain any document results
 	assert.NotContains(t, result, "## Document Result", "Expected no document results for empty input")
 }

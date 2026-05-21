@@ -70,7 +70,7 @@ Final subsection with concluding remarks and additional information.
 		var contentBuilder strings.Builder
 		sectionsPerFile := fileSize / len(fmt.Sprintf(sectionTemplate, i, i, i, i, i, i, i, i, i, i))
 		for j := range sectionsPerFile {
-			sectionNum := i * sectionsPerFile + j
+			sectionNum := i*sectionsPerFile + j
 			fmt.Fprintf(&contentBuilder, sectionTemplate,
 				sectionNum, sectionNum, sectionNum, sectionNum, sectionNum,
 				sectionNum, sectionNum, sectionNum, sectionNum, sectionNum)

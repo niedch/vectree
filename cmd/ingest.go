@@ -71,7 +71,7 @@ Example:
 		ds := datastore.NewSqliteDatastore(db)
 		store := store.NewSqliteStore(ds)
 
-		pipelines, err := pipeline.NewPipelineBuilder(config).BuildAll();
+		pipelines, err := pipeline.NewPipelineBuilder(config).BuildAll()
 		if err != nil {
 			log.Fatalf("Failed to build Pipeline: %e", err)
 		}
@@ -85,7 +85,8 @@ Example:
 		main.AddStage(pipeline.TypedStage(stages.NewStore(store)))
 
 		out := main.Run(ctx)
-		for range out { }
+		for range out {
+		}
 	},
 }
 

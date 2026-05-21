@@ -11,13 +11,13 @@ import (
 )
 
 type Config struct {
-	Sources        map[string]Source `koanf:"sources"`
-	Database       Database          `koanf:"database"`
-	Pipeline       Pipeline          `koanf:"pipeline"`
-	AI             AI                `koanf:"ai"`
-	Retrieval      Retrieval         `koanf:"retrieval"`
+	Sources   map[string]Source `koanf:"sources"`
+	Database  Database          `koanf:"database"`
+	Pipeline  Pipeline          `koanf:"pipeline"`
+	AI        AI                `koanf:"ai"`
+	Retrieval Retrieval         `koanf:"retrieval"`
 
-	GEMINI_API_KEY string            `koanf:"GEMINI_API_KEY"`
+	GEMINI_API_KEY string `koanf:"GEMINI_API_KEY"`
 }
 
 type Database struct {
@@ -25,10 +25,10 @@ type Database struct {
 }
 
 type Pipeline struct {
-	EmbedderBatchSize int    `koanf:"embedder_batch_size"`
-	EmbedderWorkers   int    `koanf:"embedder_workers"`
-	StoreBatchSize    int    `koanf:"store_batch_size"`
-	DocuLoaderWorkers int    `koanf:"docu_loader_workers"`
+	EmbedderBatchSize int `koanf:"embedder_batch_size"`
+	EmbedderWorkers   int `koanf:"embedder_workers"`
+	StoreBatchSize    int `koanf:"store_batch_size"`
+	DocuLoaderWorkers int `koanf:"docu_loader_workers"`
 }
 
 type Retrieval struct {
@@ -51,7 +51,7 @@ func loadCustomFile(filepath string) (*Config, error) {
 
 	return cfg, err
 }
- 
+
 func marshalConf(k *koanf.Koanf) *Config {
 	var cfg Config
 	err := k.UnmarshalWithConf("", &cfg, koanf.UnmarshalConf{Tag: "koanf"})

@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/server"
 	"github.com/niedch/tree-rag/internal/ai"
 	"github.com/niedch/tree-rag/internal/conf"
 	"github.com/niedch/tree-rag/internal/datastore"
 	"github.com/niedch/tree-rag/internal/mcptemplate"
-	"github.com/mark3labs/mcp-go/mcp"
-	"github.com/mark3labs/mcp-go/server"
 	"github.com/spf13/cobra"
 )
 
@@ -113,66 +113,66 @@ Examples: 'How to configure authentication',
 				return mcp.NewToolResultError(err.Error()), nil
 			}
 
-		resultString := mcptemplate.BuildResponseString(docs)
+			resultString := mcptemplate.BuildResponseString(docs)
 
-		return mcp.NewToolResultText(resultString), nil
-	})
+			return mcp.NewToolResultText(resultString), nil
+		})
 
-	// Add tool to get parent context for a document
-	contextTool := mcp.NewTool("get-parent-context",
-		mcp.WithDescription(`Get the parent context for a specific document. When you find a relevant document 
+		// Add tool to get parent context for a document
+		contextTool := mcp.NewTool("get-parent-context",
+			mcp.WithDescription(`Get the parent context for a specific document. When you find a relevant document 
 in search results, you can use this tool to get its parent document for broader context. 
 For example, if you find a document at level 3, you can request its parent at level 2 to understand 
 the broader topic or section it belongs to.`),
-		mcp.WithNumber("document-id",
-			mcp.Required(),
-			mcp.Description("The ID of the document whose parent context you want to retrieve"),
-		),
-	)
+			mcp.WithNumber("document-id",
+				mcp.Required(),
+				mcp.Description("The ID of the document whose parent context you want to retrieve"),
+			),
+		)
 
-	s.AddTool(contextTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-		documentId, err := request.RequireInt("document-id")
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
+		s.AddTool(contextTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+			documentId, err := request.RequireInt("document-id")
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
+			}
 
-		// First, get the requested document to check if it's a root document
-		doc, err := ds.GetDocument(ctx, documentId)
-		if err != nil {
-			return mcp.NewToolResultError(fmt.Sprintf("Document not found: %v", err)), nil
-		}
+			// First, get the requested document to check if it's a root document
+			doc, err := ds.GetDocument(ctx, documentId)
+			if err != nil {
+				return mcp.NewToolResultError(fmt.Sprintf("Document not found: %v", err)), nil
+			}
 
-		// Check if this document is a root document (no parent)
-		if doc.ParentId == nil {
-			return mcp.NewToolResultText(fmt.Sprintf(
-				"Document %d is a root document (Level %d heading) and has no parent context.\n\n"+
-					"**Document Content:**\n\n%s",
-				doc.Id, doc.Level, doc.Document)), nil
-		}
+			// Check if this document is a root document (no parent)
+			if doc.ParentId == nil {
+				return mcp.NewToolResultText(fmt.Sprintf(
+					"Document %d is a root document (Level %d heading) and has no parent context.\n\n"+
+						"**Document Content:**\n\n%s",
+					doc.Id, doc.Level, doc.Document)), nil
+			}
 
-		// Get the parent document
-		parentDoc, err := ds.GetParentDocument(ctx, documentId)
-		if err != nil {
-			return mcp.NewToolResultError(fmt.Sprintf("Could not find parent document: %v", err)), nil
-		}
+			// Get the parent document
+			parentDoc, err := ds.GetParentDocument(ctx, documentId)
+			if err != nil {
+				return mcp.NewToolResultError(fmt.Sprintf("Could not find parent document: %v", err)), nil
+			}
 
-		// Wrap the parent document in a DocumentWithEmbedding slice for template consistency
-		// Note: We don't need the embedding for display, so we can leave it empty
-		parentDocs := []datastore.DocumentWithEmbedding{
-			{
-				Document: *parentDoc,
-				Embedding: nil,
-				EmbeddingRowid: 0,
-			},
-		}
+			// Wrap the parent document in a DocumentWithEmbedding slice for template consistency
+			// Note: We don't need the embedding for display, so we can leave it empty
+			parentDocs := []datastore.DocumentWithEmbedding{
+				{
+					Document:       *parentDoc,
+					Embedding:      nil,
+					EmbeddingRowid: 0,
+				},
+			}
 
-		// Use the same template as search results for consistency
-		resultString := mcptemplate.BuildResponseString(parentDocs)
+			// Use the same template as search results for consistency
+			resultString := mcptemplate.BuildResponseString(parentDocs)
 
-		return mcp.NewToolResultText(resultString), nil
-	})
+			return mcp.NewToolResultText(resultString), nil
+		})
 
-	// Add prompts to guide LLM usage
+		// Add prompts to guide LLM usage
 		s.AddPrompt(mcp.NewPrompt("connectall-help",
 			mcp.WithPromptDescription("Get help with ConnectAll features, configuration, or troubleshooting"),
 			mcp.WithArgument("topic",

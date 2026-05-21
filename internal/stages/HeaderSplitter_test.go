@@ -40,7 +40,7 @@ This is the second subsection.`},
 			input: `Some text before the first header.
 # Header 1
 Text in section 1.`,
-			expected: []string{ `# Header 1
+			expected: []string{`# Header 1
 Text in section 1.`},
 		},
 	}

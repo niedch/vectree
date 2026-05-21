@@ -68,4 +68,3 @@ func TestAddStagesAndExecution(t *testing.T) {
 	assert.True(t, stage2Ran, "expected stage2 to be run, but it was not")
 	assert.Equal(t, 42, stage2Received, "expected stage2 to receive 42")
 }
-

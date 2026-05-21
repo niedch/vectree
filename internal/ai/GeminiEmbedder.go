@@ -1,9 +1,9 @@
 package ai
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"context"
 
 	"google.golang.org/genai"
 )

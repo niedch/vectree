@@ -28,8 +28,8 @@ func (l FileLoader) Run(ctx context.Context, in <-chan string) <-chan string {
 				return
 			}
 
-			if (len(data) == 0) {
-				continue;
+			if len(data) == 0 {
+				continue
 			}
 
 			fileCount++
@@ -42,7 +42,7 @@ func (l FileLoader) Run(ctx context.Context, in <-chan string) <-chan string {
 			}
 		}
 
-		log.Printf("FileLoader: Loaded %d files, total size: %d bytes (%.2f MB)\n", 
+		log.Printf("FileLoader: Loaded %d files, total size: %d bytes (%.2f MB)\n",
 			fileCount, totalSize, float64(totalSize)/(1024*1024))
 	}()
 
