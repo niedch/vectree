@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"log"
 
 	"github.com/niedch/tree-rag/internal/ai"
 	"github.com/niedch/tree-rag/internal/conf"
@@ -52,7 +53,10 @@ Example:
   connectall-doc-rag ingest`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		config := conf.Load()
+		config, err := conf.Load()
+		if err != nil {
+			log.Fatal("Error loading config: ", err)
+		}
 
 		embedder := ai.NewGeminiEmbedder(config.GEMINI_API_KEY, config.AI.EmbeddingModel)
 		embedder.Initialize(ctx)

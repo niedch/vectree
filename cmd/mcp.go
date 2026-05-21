@@ -66,7 +66,11 @@ Example:
 			server.WithRecovery(),
 		)
 
-		config := conf.Load()
+		config, err := conf.Load()
+		if err != nil {
+			log.Fatal("Error loading config: ", err)
+		}
+
 		db, err := datastore.OpenConnection(config)
 		if err != nil {
 			log.Fatalln(err)

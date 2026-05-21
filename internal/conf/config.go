@@ -39,13 +39,24 @@ type Retrieval struct {
 	SimilarityResults int `koanf:"similarity_results"`
 }
 
-func Load() *Config {
+func Load() (*Config, error) {
+	return loadCustomFile("config.toml")
+}
+
+func loadCustomFile(filepath string) (*Config, error) {
 	k := koanf.New(".")
 
 	loadDefaults(k)
 	loadEnvironment(k)
-	loadLocalFile(k)
+	loadLocalFile(k, filepath)
 
+	cfg := marshalConf(k)
+	err := validateConfig(cfg)
+
+	return cfg, err
+}
+ 
+func marshalConf(k *koanf.Koanf) *Config {
 	var cfg Config
 	err := k.UnmarshalWithConf("", &cfg, koanf.UnmarshalConf{Tag: "koanf"})
 	if err != nil {
@@ -63,7 +74,7 @@ func Load() *Config {
 func loadDefaults(k *koanf.Koanf) {
 	k.Load(structs.Provider(Config{
 		AI: AI{
-			EmbeddingModel: "embedding-001",
+			EmbeddingModel: "text_embedding_004",
 		},
 		Pipeline: Pipeline{
 			EmbedderBatchSize: 64,
@@ -81,8 +92,8 @@ func loadEnvironment(k *koanf.Koanf) {
 	k.Load(env.Provider("", ".", nil), nil)
 }
 
-func loadLocalFile(k *koanf.Koanf) {
-	if err := k.Load(file.Provider("config.toml"), toml.Parser()); err != nil {
+func loadLocalFile(k *koanf.Koanf, filename string) {
+	if err := k.Load(file.Provider(filename), toml.Parser()); err != nil {
 		log.Println("Cannot load local config file", err)
 	}
 }

@@ -9,7 +9,10 @@ go = "1.26.1"
 
 [tasks.generate]
 description = "Generate Mocks"
-run = "mockery"
+run = """
+go generate
+mockery
+"""
 
 [tasks.test]
 depends = ["generate"]
