@@ -1,9 +1,12 @@
 package conf
 
 const (
-	OPENAI_PROVIDER   AIProvider = "openai"
-	GEMINI_PROVIDER   AIProvider = "gemini"
-	OLLAMA_PROVIDER   AIProvider = "ollama"
+	OPENAI_PROVIDER AIProvider = "openai"
+	GEMINI_PROVIDER AIProvider = "gemini"
+	OLLAMA_PROVIDER AIProvider = "ollama"
+)
+const (
+	DEFAULT_GEMINI_VERTEX_SIZE = 768
 )
 
 type AIProvider string
@@ -23,10 +26,15 @@ func (a AI) AsGeminiProviderConfig() *GeminiProviderConfig {
 	if a.Provider != GEMINI_PROVIDER {
 		return nil
 	}
+	vertexSize := a.VertexSize
+	if vertexSize == 0 {
+		vertexSize = DEFAULT_GEMINI_VERTEX_SIZE
+	}
+
 	return &GeminiProviderConfig{
 		AIBase:         AIBase{Provider: a.Provider},
 		EmbeddingModel: a.EmbeddingModel,
-		VertexSize:     a.VertexSize,
+		VertexSize:     vertexSize,
 	}
 }
 
@@ -55,7 +63,7 @@ func (a AI) AsOllamaProviderConfig() *OllamaProviderConfig {
 type GeminiProviderConfig struct {
 	AIBase
 	EmbeddingModel string `validate:"required"`
-	VertexSize     int    `validate:"required"`
+	VertexSize     int
 }
 
 type OpenAIProviderConfig struct {

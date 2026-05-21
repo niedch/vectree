@@ -69,11 +69,6 @@ func marshalConf(k *koanf.Koanf) *Config {
 
 func loadDefaults(k *koanf.Koanf) {
 	k.Load(structs.Provider(Config{
-		AI: AI{
-			EmbeddingModel: "text_embedding_004",
-			VertexSize:     768,
-			Provider:       GEMINI_PROVIDER,
-		},
 		Pipeline: Pipeline{
 			EmbedderBatchSize: 64,
 			EmbedderWorkers:   8,

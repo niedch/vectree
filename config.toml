@@ -21,6 +21,7 @@ store_batch_size = 64
 docu_loader_workers = 10
 
 [ai]
+provider = "gemini"
 embedding_model = "text-embedding-004"
 
 [retrieval]
