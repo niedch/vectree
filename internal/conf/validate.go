@@ -8,12 +8,8 @@ import (
 )
 
 var (
-	validate *validator.Validate
+	validate *validator.Validate = validator.New(validator.WithRequiredStructEnabled())
 )
-
-func init() {
-	validate = validator.New(validator.WithRequiredStructEnabled())
-}
 
 func validateConfig(cfg *Config) error {
 	if err := validateSources(cfg.Sources); err != nil {
@@ -26,19 +22,6 @@ func validateConfig(cfg *Config) error {
 	}
 
 	return nil
-}
-
-func fmtErr(err validator.FieldError) string {
-	switch err.Tag() {
-	case "required":
-		return fmt.Sprintf("%s is required", err.Field())
-	case "url":
-		return fmt.Sprintf("%s must be a valid URL", err.Field())
-	case "dirpath":
-		return fmt.Sprintf("%s must be a valid Directory", err.Field())
-	default:
-		return fmt.Sprintf("%s failed validation: %s", err.Field(), err.Tag())
-	}
 }
 
 func validateSources(sources map[string]Source) error {
@@ -67,7 +50,20 @@ func validateSources(sources map[string]Source) error {
 	}
 
 	if len(errs) > 0 {
-		return fmt.Errorf("%s", strings.Join(errs, "; "))
+		return fmt.Errorf("\n\t%s", strings.Join(errs, "\n\t"))
 	}
 	return nil
+}
+
+func fmtErr(err validator.FieldError) string {
+	switch err.Tag() {
+	case "required":
+		return fmt.Sprintf("%s is required", err.Field())
+	case "url":
+		return fmt.Sprintf("%s must be a valid URL", err.Field())
+	case "dirpath":
+		return fmt.Sprintf("%s must be a valid Directory", err.Field())
+	default:
+		return fmt.Sprintf("%s failed validation: %s", err.Field(), err.Tag())
+	}
 }
