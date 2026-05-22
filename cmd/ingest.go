@@ -4,12 +4,12 @@ import (
 	"context"
 	"log"
 
-	"github.com/niedch/tree-rag/internal/ai"
-	"github.com/niedch/tree-rag/internal/conf"
-	"github.com/niedch/tree-rag/internal/datastore"
-	"github.com/niedch/tree-rag/internal/pipeline"
-	"github.com/niedch/tree-rag/internal/stages"
-	"github.com/niedch/tree-rag/internal/store"
+	"github.com/niedch/vectree/internal/ai"
+	"github.com/niedch/vectree/internal/conf"
+	"github.com/niedch/vectree/internal/datastore"
+	"github.com/niedch/vectree/internal/pipeline"
+	"github.com/niedch/vectree/internal/stages"
+	"github.com/niedch/vectree/internal/store"
 	"github.com/spf13/cobra"
 )
 
@@ -50,7 +50,7 @@ Configuration:
 - Database: SQLite with vec0 extension for vector similarity search
 
 Example:
-  connectall-doc-rag ingest`,
+  vectree ingest`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 		config, err := conf.Load()

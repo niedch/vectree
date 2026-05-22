@@ -7,10 +7,10 @@ import (
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
-	"github.com/niedch/tree-rag/internal/ai"
-	"github.com/niedch/tree-rag/internal/conf"
-	"github.com/niedch/tree-rag/internal/datastore"
-	"github.com/niedch/tree-rag/internal/mcptemplate"
+	"github.com/niedch/vectree/internal/ai"
+	"github.com/niedch/vectree/internal/conf"
+	"github.com/niedch/vectree/internal/datastore"
+	"github.com/niedch/vectree/internal/mcptemplate"
 	"github.com/spf13/cobra"
 )
 
@@ -57,7 +57,7 @@ Configuration:
 - Similarity results count configurable via config
 
 Example:
-  connectall-doc-rag mcp`,
+  vectree mcp`,
 	Run: func(cmd *cobra.Command, args []string) {
 		s := server.NewMCPServer(
 			"ConnectAll documentation",

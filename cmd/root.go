@@ -7,9 +7,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "connectall-doc-rag",
+	Use:   "vectree",
 	Short: "Document ingestion and RAG system for ConnectAll documentation",
-	Long: `connectall-doc-rag is a command-line tool for building and serving a RAG (Retrieval-Augmented Generation) 
+	Long: `vectree is a command-line tool for building and serving a RAG (Retrieval-Augmented Generation) 
 system for ConnectAll documentation.
 
 This tool provides three main commands:
@@ -41,7 +41,7 @@ Architecture:
 - Vector similarity search using SQLite vec0 extension
 - Hierarchical document structure with parent-child relationships
 
-Use 'connectall-doc-rag [command] --help' for more information about a command.`,
+Use 'vectree [command] --help' for more information about a command.`,
 }
 
 func Execute() {

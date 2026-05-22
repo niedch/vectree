@@ -5,7 +5,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/niedch/tree-rag/internal/conf"
+	"github.com/niedch/vectree/internal/conf"
 )
 
 func OpenConnection(config *conf.Config) (*sqlx.DB, error) {

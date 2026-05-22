@@ -1,4 +1,4 @@
-module github.com/niedch/tree-rag
+module github.com/niedch/vectree
 
 go 1.26.1
 

@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/niedch/tree-rag/internal/conf"
-	"github.com/niedch/tree-rag/internal/pipeline"
+	"github.com/niedch/vectree/internal/conf"
+	"github.com/niedch/vectree/internal/pipeline"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +30,7 @@ This is useful for:
 - Verifying file paths and content loading
 
 Example:
-  connectall-doc-rag ingestDebug`,
+  vectree ingestDebug`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 

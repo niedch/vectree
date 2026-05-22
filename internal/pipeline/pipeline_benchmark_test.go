@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/niedch/tree-rag/internal/ai"
-	"github.com/niedch/tree-rag/internal/stages"
-	"github.com/niedch/tree-rag/internal/store"
+	"github.com/niedch/vectree/internal/ai"
+	"github.com/niedch/vectree/internal/stages"
+	"github.com/niedch/vectree/internal/store"
 )
 
 var benchDataDir string

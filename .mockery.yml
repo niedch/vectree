@@ -1,15 +1,15 @@
 all: false
 filename: '{{.Mock}}{{.InterfaceName}}.go'
 packages:
-  github.com/niedch/tree-rag/internal/ai:
+  github.com/niedch/vectree/internal/ai:
     config:
       all: true
-  github.com/niedch/tree-rag/internal/store:
+  github.com/niedch/vectree/internal/store:
     config:
       all: true
-  github.com/niedch/tree-rag/internal/stages:
+  github.com/niedch/vectree/internal/stages:
     config:
       all: true
-  github.com/niedch/tree-rag/internal/datastore:
+  github.com/niedch/vectree/internal/datastore:
     config:
       all: true

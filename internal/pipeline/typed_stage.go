@@ -3,7 +3,7 @@ package pipeline
 import (
 	"context"
 
-	"github.com/niedch/tree-rag/internal/stages"
+	"github.com/niedch/vectree/internal/stages"
 )
 
 func TypedStage[I any, O any](stage stages.Stage[I, O]) stages.UntypedStage {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/niedch/tree-rag/internal/conf"
-	"github.com/niedch/tree-rag/internal/datastore"
+	"github.com/niedch/vectree/internal/conf"
+	"github.com/niedch/vectree/internal/datastore"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

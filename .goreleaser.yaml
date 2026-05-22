@@ -5,7 +5,7 @@
 
 version: 2
 
-project_name: tree-rag
+project_name: vectree
 
 before:
   hooks:
