@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/niedch/vectree/internal/conf"
 	"google.golang.org/genai"
 )
 
@@ -14,15 +15,15 @@ type GeminiEmbedder struct {
 	Client         *genai.Client
 }
 
-func NewGeminiEmbedder(ctx context.Context, apikey string, embeddingModel string) (*GeminiEmbedder, error) {
-	client, err := genai.NewClient(ctx, &genai.ClientConfig{APIKey: apikey})
+func NewGeminiEmbedder(ctx context.Context, cfg *conf.GeminiProviderConfig) (*GeminiEmbedder, error) {
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{APIKey: cfg.APIKey})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gemini client: %w", err)
 	}
 
 	return &GeminiEmbedder{
-		embeddingModel: embeddingModel,
-		apikey:         apikey,
+		embeddingModel: cfg.EmbeddingModel,
+		apikey:         cfg.APIKey,
 		Client:         client,
 	}, nil
 }

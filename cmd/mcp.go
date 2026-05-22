@@ -77,7 +77,7 @@ Example:
 		}
 		ds := datastore.NewSqliteDatastore(db)
 
-		model, err := ai.NewGeminiEmbedder(context.Background(), config.AI.GeminiAPIKey, config.AI.EmbeddingModel)
+		model, err := ai.NewGeminiEmbedder(context.Background(), config.AI.AsGeminiProviderConfig())
 		if err != nil {
 			log.Fatal("Error initializing embedding model: ", err)
 		}
