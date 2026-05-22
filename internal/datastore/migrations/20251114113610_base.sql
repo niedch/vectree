@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS document (
 );
 
 CREATE VIRTUAL TABLE IF NOT EXISTS embedding USING vec0(
-  embedding FLOAT[768]
+  embedding FLOAT[3072]
 );
 
 -- Mapping table to link documents to embeddings

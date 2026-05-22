@@ -15,7 +15,7 @@ func NewPipelineBuilder(cfg *conf.Config) *PipelineBuilder {
 	return &PipelineBuilder{cfg: cfg}
 }
 
-func (b *PipelineBuilder) BuildAll() ([]*Pipeline, error) {
+func (b *PipelineBuilder) BuildSources() ([]*Pipeline, error) {
 	pipelines := make([]*Pipeline, 0, len(b.cfg.Sources))
 
 	for name := range b.cfg.Sources {

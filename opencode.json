@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": false,
+  "mcp": {
+    "vectree": {
+      "type": "local",
+      "command": ["mise", "dev", "--", "mcp"]
+    }
+  }
+}

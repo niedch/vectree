@@ -4,11 +4,11 @@ url = "https://docs.labs.ai/"
 max_depth = 3
 selector = ".contents"
 
-[sources.gemini-docs]
-type = "http"
-url = "https://ai.google.dev/gemini-api/docs"
-max_depth = 3
-selector = ".devsite-article-body"
+# [sources.gemini-docs]
+# type = "http"
+# url = "https://ai.google.dev/gemini-api/docs"
+# max_depth = 3
+# selector = ".devsite-article-body"
 
 [sources.obsidian-vault]
 type = "markdown"
@@ -25,7 +25,7 @@ crawler_workers = 8
 
 [ai]
 provider = "gemini"
-embedding_model = "text-embedding-004"
+embedding_model = "gemini-embedding-001"
 
 [retrieval]
 similarity_results = 3

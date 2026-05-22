@@ -39,13 +39,15 @@ Example:
 			log.Fatal("Error loading config: ", err)
 		}
 
-		pipelines, err := pipeline.NewPipelineBuilder(config).BuildAll()
+		pipelineBuilder := pipeline.NewPipelineBuilder(config);
+
+		sourcePipeline, err := pipelineBuilder.BuildSources();
 		if err != nil {
-			log.Fatalf("Failed to build Pipeline: %e", err)
+			log.Fatalf("Failed to build Sources Pipeline: %e", err)
 		}
 
 		ingestionPipeline := pipeline.NewPipeline()
-		ingestionPipeline.AddStage(pipeline.MergePipelines(pipelines))
+		ingestionPipeline.AddStage(pipeline.MergePipelines(sourcePipeline))
 		ingestionPipeline.AddStage(pipeline.TypedStage(stages.NewMdAstSplitter()))
 
 		outDir := "output"
