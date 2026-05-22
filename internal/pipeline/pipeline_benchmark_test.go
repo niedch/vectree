@@ -22,11 +22,11 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.RemoveAll(benchDataDir)
-
 	createTempMarkdownFiles(benchDataDir, 1000)
 
-	os.Exit(m.Run())
+	code := m.Run()
+	os.RemoveAll(benchDataDir)
+	os.Exit(code)
 }
 
 // createTempMarkdownFiles creates a directory and fills it with markdown files
