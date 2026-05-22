@@ -10,7 +10,7 @@ import (
 	"github.com/niedch/vectree/internal/mdast"
 )
 
-type SectionWithLevel struct {
+type Section struct {
 	Text       string
 	Level      int
 	ParentId   *int
@@ -25,11 +25,11 @@ func NewMdAstSplitter() *MdAstSplitter {
 	return &MdAstSplitter{workers: runtime.NumCPU()}
 }
 
-func (s MdAstSplitter) Run(ctx context.Context, in <-chan string) <-chan SectionWithLevel {
+func (s MdAstSplitter) Run(ctx context.Context, in <-chan string) <-chan Section {
 	return WorkerPoolStage(ctx, in, s.workers, s.processDocument)
 }
 
-func (s MdAstSplitter) processDocument(ctx context.Context, doc string, out chan<- SectionWithLevel) error {
+func (s MdAstSplitter) processDocument(ctx context.Context, doc string, out chan<- Section) error {
 	hash := sha256.Sum256([]byte(doc))
 	documentId := hex.EncodeToString(hash[:8])
 
@@ -67,7 +67,7 @@ func (s MdAstSplitter) processDocument(ctx context.Context, doc string, out chan
 		sectionText := sb.String()
 
 		select {
-		case out <- SectionWithLevel{
+		case out <- Section{
 			Text:       sectionText,
 			Level:      heading.Level,
 			DocumentId: documentId,

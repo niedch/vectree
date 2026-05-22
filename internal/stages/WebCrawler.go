@@ -123,43 +123,75 @@ func (w *WebCrawler) Run(ctx context.Context, _ <-chan any) <-chan string {
 }
 
 func (w *WebCrawler) crawlPage(ctx context.Context, pageURL string) (crawlPageResult, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", pageURL, nil)
+	doc, err := w.fetchPage(ctx, pageURL)
 	if err != nil {
 		return crawlPageResult{}, err
+	}
+	if doc == nil {
+		return crawlPageResult{}, nil
+	}
+
+	content, err := w.extractContent(doc)
+	if err != nil {
+		return crawlPageResult{}, err
+	}
+	if content == "" {
+		log.Printf("[%s] No content found for selector %q in %s", w.sourceName, w.selector, pageURL)
+		return crawlPageResult{}, nil
+	}
+
+	links := w.extractLinks(doc, pageURL)
+
+	return crawlPageResult{content: content, links: links}, nil
+}
+
+func (w *WebCrawler) fetchPage(ctx context.Context, pageURL string) (*goquery.Document, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", pageURL, nil)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return crawlPageResult{}, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return crawlPageResult{}, nil
+		return nil, nil
 	}
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return crawlPageResult{}, err
-	}
+	return goquery.NewDocumentFromReader(resp.Body)
+}
 
+func (w *WebCrawler) extractContent(doc *goquery.Document) (string, error) {
 	sel := doc.Find(w.selector).First()
-	var content string
-	if sel.Length() > 0 {
-		htmlContent, err := sel.Html()
-		if err == nil && htmlContent != "" {
-			markdown, err := w.converter.ConvertString(htmlContent)
-			if err == nil {
-				content = strings.TrimSpace(markdown)
-			}
-		}
+	if sel.Length() == 0 {
+		return "", nil
 	}
 
-	if content == "" {
-		log.Printf("[%s] No content found for selector %q in %s", w.sourceName, w.selector, pageURL)
+	htmlContent, err := sel.Html()
+	if err != nil {
+		return "", err
+	}
+	if htmlContent == "" {
+		return "", nil
 	}
 
-	baseURL, _ := url.Parse(pageURL)
+	markdown, err := w.converter.ConvertString(htmlContent)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(markdown), nil
+}
+
+func (w *WebCrawler) extractLinks(doc *goquery.Document, pageURL string) []string {
+	baseURL, err := url.Parse(pageURL)
+	if err != nil {
+		return nil
+	}
+
 	var links []string
 	doc.Find("a[href]").Each(func(i int, s *goquery.Selection) {
 		href, exists := s.Attr("href")
@@ -172,7 +204,7 @@ func (w *WebCrawler) crawlPage(ctx context.Context, pageURL string) (crawlPageRe
 		}
 	})
 
-	return crawlPageResult{content: content, links: links}, nil
+	return links
 }
 
 func resolveURL(base *url.URL, href string) string {

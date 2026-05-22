@@ -20,18 +20,18 @@ func TestEmbedder_Run(t *testing.T) {
 	}
 
 	// Create input and output channels
-	in := make(chan []SectionWithLevel)
+	in := make(chan []Section)
 	out := embedder.Run(context.Background(), in)
 
 	// Test data
-	batch1 := []SectionWithLevel{
+	batch1 := []Section{
 		{Text: "text1", Level: 1},
 		{Text: "text2", Level: 2},
 	}
 	texts1 := []string{"text1", "text2"}
 	embeddings1 := [][]float32{{1.0, 2.0}, {3.0, 4.0}}
 
-	batch2 := []SectionWithLevel{
+	batch2 := []Section{
 		{Text: "text3", Level: 1},
 		{Text: "text4", Level: 3},
 	}

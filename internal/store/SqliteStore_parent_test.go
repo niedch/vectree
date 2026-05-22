@@ -36,25 +36,25 @@ func TestParentChildRelationships(t *testing.T) {
 	chunks := []Chunk{
 		{
 			Text:       "# Main Title\nIntroduction content",
-			Vector:     make([]float32, 768),
+			Vector:     make([]float32, 3072),
 			Level:      1,
 			DocumentId: "doc1",
 		},
 		{
 			Text:       "## Section A\nSection A content",
-			Vector:     make([]float32, 768),
+			Vector:     make([]float32, 3072),
 			Level:      2,
 			DocumentId: "doc1",
 		},
 		{
 			Text:       "### Subsection A1\nSubsection content",
-			Vector:     make([]float32, 768),
+			Vector:     make([]float32, 3072),
 			Level:      3,
 			DocumentId: "doc1",
 		},
 		{
 			Text:       "## Section B\nSection B content",
-			Vector:     make([]float32, 768),
+			Vector:     make([]float32, 3072),
 			Level:      2,
 			DocumentId: "doc1",
 		},
@@ -122,25 +122,25 @@ func TestMultipleDocumentsParentIsolation(t *testing.T) {
 	chunks := []Chunk{
 		{
 			Text:       "# Title 1",
-			Vector:     make([]float32, 768),
+			Vector:     make([]float32, 3072),
 			Level:      1,
 			DocumentId: "doc1",
 		},
 		{
 			Text:       "## Section 1A",
-			Vector:     make([]float32, 768),
+			Vector:     make([]float32, 3072),
 			Level:      2,
 			DocumentId: "doc1",
 		},
 		{
 			Text:       "# Title 2",
-			Vector:     make([]float32, 768),
+			Vector:     make([]float32, 3072),
 			Level:      1,
 			DocumentId: "doc2",
 		},
 		{
 			Text:       "## Section 2A",
-			Vector:     make([]float32, 768),
+			Vector:     make([]float32, 3072),
 			Level:      2,
 			DocumentId: "doc2",
 		},
@@ -196,13 +196,13 @@ func TestGetParentDocument(t *testing.T) {
 	chunks := []Chunk{
 		{
 			Text:       "# Main Title",
-			Vector:     make([]float32, 768),
+			Vector:     make([]float32, 3072),
 			Level:      1,
 			DocumentId: "doc1",
 		},
 		{
 			Text:       "## Section A",
-			Vector:     make([]float32, 768),
+			Vector:     make([]float32, 3072),
 			Level:      2,
 			DocumentId: "doc1",
 		},

@@ -15,7 +15,20 @@ func NewPipelineBuilder(cfg *conf.Config) *PipelineBuilder {
 	return &PipelineBuilder{cfg: cfg}
 }
 
-func (b *PipelineBuilder) BuildAll() ([]*Pipeline, error) {
+func (b *PipelineBuilder) BuildChunking() stages.Stage[string, stages.Section] {
+	var splitter stages.Stage[string, stages.Section]
+	switch b.cfg.Chunking.Strategy {
+	case conf.HEADER_STRATEGY:
+		splitter = stages.NewHeaderSplitter()
+	case conf.LINE_STRATEGY:
+		splitter = stages.NewLineSplitter()
+	default:
+		splitter = stages.NewMdAstSplitter()
+	}
+	return splitter
+}
+
+func (b *PipelineBuilder) BuildSources() ([]*Pipeline, error) {
 	pipelines := make([]*Pipeline, 0, len(b.cfg.Sources))
 
 	for name := range b.cfg.Sources {

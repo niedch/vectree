@@ -16,6 +16,10 @@ func validateConfig(cfg *Config) error {
 		return err
 	}
 
+	if err := validateChunking(cfg.Chunking); err != nil {
+		return err
+	}
+
 	if err := validateAI(cfg.AI); err != nil {
 		return err
 	}
@@ -26,6 +30,15 @@ func validateConfig(cfg *Config) error {
 	}
 
 	return nil
+}
+
+func validateChunking(c Chunking) error {
+	switch c.Strategy {
+	case MDAST_STRATEGY, HEADER_STRATEGY, LINE_STRATEGY:
+		return nil
+	default:
+		return fmt.Errorf("chunking: strategy %q is invalid (must be one of: mdast, header, line)", c.Strategy)
+	}
 }
 
 func validateAI(ai AI) error {

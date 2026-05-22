@@ -13,12 +13,12 @@ func TestMdAstSplitter_Run(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
-		expected []SectionWithLevel
+		expected []Section
 	}{
 		{
 			name:  "Single heading",
 			input: "# Hello World",
-			expected: []SectionWithLevel{
+			expected: []Section{
 				{Text: "# Hello World\n", Level: 1},
 			},
 		},
@@ -27,7 +27,7 @@ func TestMdAstSplitter_Run(t *testing.T) {
 			input: `# Title
 
 This is a paragraph.`,
-			expected: []SectionWithLevel{
+			expected: []Section{
 				{Text: "# Title\nThis is a paragraph.\n", Level: 1},
 			},
 		},
@@ -40,7 +40,7 @@ Paragraph one.
 # Title Two
 
 Paragraph two.`,
-			expected: []SectionWithLevel{
+			expected: []Section{
 				{Text: "# Title One\nParagraph one.\n", Level: 1},
 				{Text: "# Title Two\nParagraph two.\n", Level: 1},
 			},
@@ -62,7 +62,7 @@ Subsection content.
 ## Section Two
 
 Section two content.`,
-			expected: []SectionWithLevel{
+			expected: []Section{
 				{Text: "# Main Title\nIntroduction paragraph.\n## Section One\nSection one content.\n### Subsection 1.1\nSubsection content.\n## Section Two\nSection two content.\n", Level: 1},
 				{Text: "## Section One\nSection one content.\n### Subsection 1.1\nSubsection content.\n", Level: 2},
 				{Text: "### Subsection 1.1\nSubsection content.\n", Level: 3},
@@ -86,7 +86,7 @@ Second intro.
 ## Second Section
 
 Second section content.`,
-			expected: []SectionWithLevel{
+			expected: []Section{
 				{Text: "# First Title\nFirst intro.\n## First Section\nFirst section content.\n", Level: 1},
 				{Text: "## First Section\nFirst section content.\n", Level: 2},
 				{Text: "# Second Title\nSecond intro.\n## Second Section\nSecond section content.\n", Level: 1},
@@ -114,7 +114,7 @@ More details.
 ## Section Two
 
 Content for section two.`,
-			expected: []SectionWithLevel{
+			expected: []Section{
 				{Text: "# Main Title\nFirst paragraph.\n## Section One\nContent for section one.\n### Subsection 1.1\nDetails here.\n### Subsection 1.2\nMore details.\n## Section Two\nContent for section two.\n", Level: 1},
 				{Text: "## Section One\nContent for section one.\n### Subsection 1.1\nDetails here.\n### Subsection 1.2\nMore details.\n", Level: 2},
 				{Text: "### Subsection 1.1\nDetails here.\n", Level: 3},
@@ -125,7 +125,7 @@ Content for section two.`,
 		{
 			name:     "No headings",
 			input:    "Just a paragraph with no headings.",
-			expected: []SectionWithLevel{},
+			expected: []Section{},
 		},
 		{
 			name: "Multiple level 2 headings",
@@ -140,7 +140,7 @@ Content two.
 ## Section Three
 
 Content three.`,
-			expected: []SectionWithLevel{
+			expected: []Section{
 				{Text: "## Section One\nContent one.\n", Level: 2},
 				{Text: "## Section Two\nContent two.\n", Level: 2},
 				{Text: "## Section Three\nContent three.\n", Level: 2},
@@ -163,7 +163,7 @@ L3 content.
 #### Level 4
 
 L4 content.`,
-			expected: []SectionWithLevel{
+			expected: []Section{
 				{Text: "# Level 1\nL1 content.\n## Level 2\nL2 content.\n### Level 3\nL3 content.\n#### Level 4\nL4 content.\n", Level: 1},
 				{Text: "## Level 2\nL2 content.\n### Level 3\nL3 content.\n#### Level 4\nL4 content.\n", Level: 2},
 				{Text: "### Level 3\nL3 content.\n#### Level 4\nL4 content.\n", Level: 3},
@@ -186,7 +186,7 @@ L4 content.`,
 			out := splitter.Run(ctx, in)
 
 			// Collect results
-			var results []SectionWithLevel
+			var results []Section
 			for result := range out {
 				results = append(results, result)
 			}
@@ -220,12 +220,12 @@ func TestMdAstSplitter_MultipleDocuments(t *testing.T) {
 	out := splitter.Run(ctx, in)
 
 	// Collect results
-	var results []SectionWithLevel
+	var results []Section
 	for result := range out {
 		results = append(results, result)
 	}
 
-	expected := []SectionWithLevel{
+	expected := []Section{
 		{Text: "# Doc 1\n", Level: 1},
 		{Text: "# Doc 2\nParagraph.\n## Subtitle\nMore content.\n", Level: 1},
 		{Text: "## Subtitle\nMore content.\n", Level: 2},
@@ -308,7 +308,7 @@ func TestMdAstSplitter_EmptyInput(t *testing.T) {
 	out := splitter.Run(ctx, in)
 
 	// Collect results
-	var results []SectionWithLevel
+	var results []Section
 	for result := range out {
 		results = append(results, result)
 	}

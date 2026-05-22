@@ -17,7 +17,7 @@ func TestLineSplitter_Run(t *testing.T) {
 
 	var lines []string
 	for line := range out {
-		lines = append(lines, line)
+		lines = append(lines, line.Text)
 	}
 
 	expectedLines := []string{"hello", "world"}
@@ -34,7 +34,7 @@ func TestLineSplitter_Run_EmptyLines(t *testing.T) {
 
 	var lines []string
 	for line := range out {
-		lines = append(lines, line)
+		lines = append(lines, line.Text)
 	}
 
 	expectedLines := []string{"hello", "world"}
@@ -51,7 +51,7 @@ func TestLineSplitter_Run_EmptyString(t *testing.T) {
 
 	var lines []string
 	for line := range out {
-		lines = append(lines, line)
+		lines = append(lines, line.Text)
 	}
 
 	assert.Empty(t, lines)

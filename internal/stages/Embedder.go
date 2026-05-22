@@ -27,8 +27,8 @@ func NewEmbedder(model ai.EmbeddingModel, workers int) *Embedder {
 	}
 }
 
-func (e Embedder) Run(ctx context.Context, in <-chan []SectionWithLevel) <-chan *EmbedderOut {
-	return WorkerPoolStage(ctx, in, e.Workers, func(ctx context.Context, batch []SectionWithLevel, out chan<- *EmbedderOut) error {
+func (e Embedder) Run(ctx context.Context, in <-chan []Section) <-chan *EmbedderOut {
+	return WorkerPoolStage(ctx, in, e.Workers, func(ctx context.Context, batch []Section, out chan<- *EmbedderOut) error {
 		texts := make([]string, len(batch))
 		for i, section := range batch {
 			texts[i] = section.Text

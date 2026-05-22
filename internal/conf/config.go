@@ -14,23 +14,9 @@ type Config struct {
 	Sources   map[string]Source `koanf:"sources"`
 	Database  Database          `koanf:"database"`
 	Pipeline  Pipeline          `koanf:"pipeline"`
+	Chunking  Chunking          `koanf:"chunking"`
 	AI        AI                `koanf:"ai"`
 	Retrieval Retrieval         `koanf:"retrieval"`
-}
-
-type Database struct {
-	ConnectionString string `koanf:"connection_string"`
-}
-
-type Pipeline struct {
-	EmbedderBatchSize int `koanf:"embedder_batch_size"`
-	EmbedderWorkers   int `koanf:"embedder_workers"`
-	StoreBatchSize    int `koanf:"store_batch_size"`
-	CrawlerWorkers    int `koanf:"crawler_workers"`
-}
-
-type Retrieval struct {
-	SimilarityResults int `koanf:"similarity_results"`
 }
 
 func Load() (*Config, error) {
@@ -67,6 +53,9 @@ func marshalConf(k *koanf.Koanf) *Config {
 
 func loadDefaults(k *koanf.Koanf) {
 	k.Load(structs.Provider(Config{
+		Chunking: Chunking{
+			Strategy: MDAST_STRATEGY,
+		},
 		Pipeline: Pipeline{
 			EmbedderBatchSize: 64,
 			EmbedderWorkers:   8,
