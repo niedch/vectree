@@ -9,6 +9,7 @@ import (
 )
 
 func TestValidateSuccess(t *testing.T) {
+	t.Setenv("GEMINI_API_KEY", "test-key")
 	f, err := os.CreateTemp(t.TempDir(), "*.toml")
 	require.NoError(t, err)
 	defer f.Close()
@@ -82,6 +83,28 @@ provider = "invalid"
 	require.Error(t, err)
 }
 
+func TestGeminiProviderRequiresApiKey(t *testing.T) {
+	t.Setenv("GEMINI_API_KEY", "")
+	f, err := os.CreateTemp(t.TempDir(), "*.toml")
+	require.NoError(t, err)
+	defer f.Close()
+
+	config_str := `
+[sources.tech-docs]
+type = "http"
+url = "https://example.com"
+
+[ai]
+provider = "gemini"
+embedding_model = "text_embedding_004"
+`
+	_, err = f.WriteString(config_str)
+	require.NoError(t, err)
+
+	_, err = loadCustomFile(f.Name())
+	require.Error(t, err)
+}
+
 func TestOllamaProviderRequiresUrl(t *testing.T) {
 	f, err := os.CreateTemp(t.TempDir(), "*.toml")
 	require.NoError(t, err)
@@ -125,6 +148,7 @@ embedding_model = "some-model"
 }
 
 func TestAIInvalidUrl(t *testing.T) {
+	t.Setenv("OPENAI_API_KEY", "test-key")
 	f, err := os.CreateTemp(t.TempDir(), "*.toml")
 	require.NoError(t, err)
 	defer f.Close()
@@ -146,6 +170,7 @@ url = "not-a-valid-url"
 }
 
 func TestMarkdownNeedsToPointToAFolder(t *testing.T) {
+	t.Setenv("GEMINI_API_KEY", "test-key")
 	f, err := os.CreateTemp(t.TempDir(), "*.toml")
 	require.NoError(t, err)
 	defer f.Close()
