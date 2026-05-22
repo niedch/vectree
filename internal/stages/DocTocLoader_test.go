@@ -165,9 +165,9 @@ func TestDocTocLoader_ContextCancellation(t *testing.T) {
 
 	loader := NewDocTocLoader("Test", server.URL)
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	out := loader.Run(ctx, nil)
-	
+
 	// Cancel context immediately
 	cancel()
 

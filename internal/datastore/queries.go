@@ -124,7 +124,7 @@ func (ds *SqliteDatastore) GetParentDocument(ctx context.Context, id int) (*Docu
 		JOIN document p ON d.parent_id = p.id
 		WHERE d.id = ?
 	`
-	
+
 	var doc Document
 	err := ds.db.GetContext(ctx, &doc, query, id)
 	if err != nil {

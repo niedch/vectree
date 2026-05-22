@@ -8,8 +8,7 @@ type MockBenchmarkModel struct {
 }
 
 func NewMockBenchmarkModel() *MockBenchmarkModel {
-	return &MockBenchmarkModel{
-	}
+	return &MockBenchmarkModel{}
 }
 
 func (ai *MockBenchmarkModel) ModelId() string {

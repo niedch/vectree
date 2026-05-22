@@ -1,7 +1,7 @@
 package mdast
 
 func ParseMarkdown(markdown string) *DocumentNode {
-	tokens := Lex(markdown);
+	tokens := Lex(markdown)
 	return Parse(tokens)
 }
 
@@ -50,4 +50,3 @@ func Parse(tokens []Token) *DocumentNode {
 
 	return doc
 }
-

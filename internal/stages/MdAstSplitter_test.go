@@ -244,7 +244,7 @@ func TestMdAstSplitter_MultipleDocuments(t *testing.T) {
 
 	// Track document IDs to verify they're different for different documents
 	docIds := make(map[string]bool)
-	
+
 	for i, exp := range expected {
 		assert.Equal(t, exp.Text, results[i].Text, "Output %d text mismatch", i)
 		assert.Equal(t, exp.Level, results[i].Level, "Output %d level mismatch", i)
@@ -252,7 +252,7 @@ func TestMdAstSplitter_MultipleDocuments(t *testing.T) {
 		assert.NotEmpty(t, results[i].DocumentId, "Output %d DocumentId should not be empty", i)
 		docIds[results[i].DocumentId] = true
 	}
-	
+
 	// We should have 3 different document IDs (one for each input document)
 	assert.Equal(t, 3, len(docIds), "Expected 3 different document IDs")
 }
@@ -292,7 +292,7 @@ func TestMdAstSplitter_ContextCancellation(t *testing.T) {
 
 	// We should have received fewer than 1000 results due to cancellation
 	assert.Less(t, count, 1000, "Expected fewer than 1000 results due to cancellation")
-	
+
 	t.Logf("Received %d results before cancellation", count)
 }
 

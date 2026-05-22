@@ -34,4 +34,3 @@ func TypedStage[I any, O any](stage stages.Stage[I, O]) stages.UntypedStage {
 		},
 	}
 }
-

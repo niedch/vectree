@@ -8,74 +8,45 @@ import (
 	"github.com/niedch/tree-rag/internal/store"
 )
 
-type Store struct {
+type StoreStage struct {
 	datastore store.Datastore
 }
 
-func NewStore(datastore store.Datastore) *Store {
-	return &Store{
+func NewStoreStage(datastore store.Datastore) *StoreStage {
+	return &StoreStage{
 		datastore: datastore,
 	}
 }
 
-func (s *Store) Run(ctx context.Context, in <-chan []*EmbedderOut) <-chan any {
+
+func (s *StoreStage) Run(ctx context.Context, in <-chan []*EmbedderOut) <-chan any {
 	out := make(chan any)
 
 	go func() {
 		defer close(out)
-		err := s.datastore.Initialize(ctx)
-		if err != nil {
-			log.Fatalln(err)
-		}
 
-		count := 0
-		var size uint64 = 0
-		batchCount := 0
-		minChunkSize := int(^uint(0) >> 1) // max int
-		maxChunkSize := 0
-		var totalChunkSize uint64 = 0
+		stats := newChunkStats()
 
 		for emb := range in {
-			embedderOut := emb
-			batchCount++
-
-			batchSize, chunks := convertEmbedderOutToChunks(embedderOut)
+			batchSize, chunks := convertEmbedderOutToChunks(emb)
 			resultCount, err := s.datastore.InsertChunks(ctx, chunks)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			size += uint64(batchSize)
-			count += resultCount
-
-			// Track chunk statistics
+			stats.addBatch(batchSize, resultCount)
 			for _, chunk := range chunks {
-				chunkLen := len(chunk.Text)
-				totalChunkSize += uint64(chunkLen)
-				if chunkLen < minChunkSize {
-					minChunkSize = chunkLen
-				}
-				if chunkLen > maxChunkSize {
-					maxChunkSize = chunkLen
-				}
+				stats.observeChunk(chunk.Text)
 			}
 
-			// Send a signal to output channel to keep pipeline alive
 			select {
-			case out <- count:
+			case out <- stats.count:
 			case <-ctx.Done():
 				return
 			}
 		}
 
-		avgChunkSize := float64(0)
-		if count > 0 {
-			avgChunkSize = float64(totalChunkSize) / float64(count)
-		}
-
-		log.Printf("Stored %d embeddings in %d batches\n", count, batchCount)
-		log.Printf("Total text size: %s (%d bytes)\n", formatBytes(size), size)
-		log.Printf("Chunk size stats - Min: %d, Max: %d, Avg: %.2f bytes\n", minChunkSize, maxChunkSize, avgChunkSize)
+		stats.log()
 	}()
 
 	return out
@@ -119,4 +90,44 @@ func convertEmbedderOutToChunks(anyArr []*EmbedderOut) (int, []store.Chunk) {
 	}
 
 	return batchSize, chunks
+}
+
+type chunkStats struct {
+	count          int
+	totalSize      uint64
+	totalChunkSize uint64
+	minChunk       int
+	maxChunk       int
+	batches        int
+}
+
+func newChunkStats() chunkStats {
+	return chunkStats{minChunk: int(^uint(0) >> 1)}
+}
+
+func (s *chunkStats) addBatch(batchSize int, numResults int) {
+	s.batches++
+	s.totalSize += uint64(batchSize)
+	s.count += numResults
+}
+
+func (s *chunkStats) observeChunk(text string) {
+	n := len(text)
+	s.totalChunkSize += uint64(n)
+	if n < s.minChunk {
+		s.minChunk = n
+	}
+	if n > s.maxChunk {
+		s.maxChunk = n
+	}
+}
+
+func (s *chunkStats) log() {
+	avg := float64(0)
+	if s.count > 0 {
+		avg = float64(s.totalChunkSize) / float64(s.count)
+	}
+	log.Printf("Stored %d embeddings in %d batches\n", s.count, s.batches)
+	log.Printf("Total text size: %s (%d bytes)\n", formatBytes(s.totalSize), s.totalSize)
+	log.Printf("Chunk size stats - Min: %d, Max: %d, Avg: %.2f bytes\n", s.minChunk, s.maxChunk, avg)
 }

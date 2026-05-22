@@ -9,7 +9,10 @@ go = "1.26.1"
 
 [tasks.generate]
 description = "Generate Mocks"
-run = "mockery"
+run = """
+go generate
+mockery
+"""
 
 [tasks.test]
 depends = ["generate"]
@@ -30,6 +33,12 @@ description = "Updates all dependencies"
 run = """
 go get -u
 go mod tidy
+"""
+
+[tasks.format]
+description = "Runs formatting across go project"
+run = """
+go fmt ./...
 """
 
 [tasks.benchmark]

@@ -31,4 +31,3 @@ func (p *Pipeline) Run(ctx context.Context) <-chan any {
 
 	return ch
 }
-

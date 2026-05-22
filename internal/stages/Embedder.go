@@ -33,7 +33,7 @@ func (e Embedder) Run(ctx context.Context, in <-chan []SectionWithLevel) <-chan 
 		for i, section := range batch {
 			texts[i] = section.Text
 		}
-		
+
 		embs, err := e.Model.GenerateEmbeddings(ctx, texts)
 		if err != nil {
 			log.Println(err)
@@ -58,9 +58,7 @@ func (e Embedder) Run(ctx context.Context, in <-chan []SectionWithLevel) <-chan 
 				return ctx.Err()
 			}
 		}
-		
+
 		return nil
 	})
 }
-
-

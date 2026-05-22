@@ -41,10 +41,10 @@ func (s Source) AsMarkdown() *MarkdownSourceConfig {
 
 type HttpSourceConfig struct {
 	SourceBase
-	URL string
+	URL string `validate:"required,url"`
 }
 
 type MarkdownSourceConfig struct {
 	SourceBase
-	Location string
+	Location string `validate:"required,dirpath"`
 }

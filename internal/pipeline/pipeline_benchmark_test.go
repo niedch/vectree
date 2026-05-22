@@ -70,7 +70,7 @@ Final subsection with concluding remarks and additional information.
 		var contentBuilder strings.Builder
 		sectionsPerFile := fileSize / len(fmt.Sprintf(sectionTemplate, i, i, i, i, i, i, i, i, i, i))
 		for j := range sectionsPerFile {
-			sectionNum := i * sectionsPerFile + j
+			sectionNum := i*sectionsPerFile + j
 			fmt.Fprintf(&contentBuilder, sectionTemplate,
 				sectionNum, sectionNum, sectionNum, sectionNum, sectionNum,
 				sectionNum, sectionNum, sectionNum, sectionNum, sectionNum)
@@ -96,7 +96,7 @@ func BenchmarkPipeline(b *testing.B) {
 	p.AddStage(TypedStage(stages.NewBatcher[stages.SectionWithLevel](64)))
 	p.AddStage(TypedStage(stages.NewEmbedder(benchmarkModel, 8)))
 	p.AddStage(TypedStage(stages.NewBatcher[*stages.EmbedderOut](32)))
-	p.AddStage(TypedStage(stages.NewStore(benchmarkStore)))
+	p.AddStage(TypedStage(stages.NewStoreStage(benchmarkStore)))
 
 	b.ResetTimer()
 	for b.Loop() {
