@@ -2,6 +2,8 @@ package stages
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"regexp"
 	"strings"
 )
@@ -20,8 +22,8 @@ func NewHeaderSplitter() *HeaderSplitter {
 
 // Run implements the Stage interface. It splits the input string by markdown headers
 // and sends each chunk to the output channel. This implementation is optimized for memory efficiency.
-func (s *HeaderSplitter) Run(ctx context.Context, in <-chan string) <-chan string {
-	out := make(chan string)
+func (s *HeaderSplitter) Run(ctx context.Context, in <-chan string) <-chan Section {
+	out := make(chan Section)
 
 	go func() {
 		defer close(out)
@@ -31,12 +33,15 @@ func (s *HeaderSplitter) Run(ctx context.Context, in <-chan string) <-chan strin
 				continue
 			}
 
+			hash := sha256.Sum256([]byte(content))
+			documentId := hex.EncodeToString(hash[:8])
+
 			headerIndices := re.FindAllStringIndex(content, -1)
 
 			// If there are no headers, send the whole content.
 			if len(headerIndices) == 0 {
 				select {
-				case out <- content:
+				case out <- Section{Text: content, Level: 0, DocumentId: documentId}:
 				case <-ctx.Done():
 					return
 				}
@@ -47,8 +52,10 @@ func (s *HeaderSplitter) Run(ctx context.Context, in <-chan string) <-chan strin
 			for i := 0; i < len(headerIndices)-1; i++ {
 				output := strings.TrimSpace(content[headerIndices[i][0]:headerIndices[i+1][0]])
 				if output != "" {
+					headerLine := content[headerIndices[i][0]:headerIndices[i][1]]
+					level := countHeaderLevel(headerLine)
 					select {
-					case out <- output:
+					case out <- Section{Text: output, Level: level, DocumentId: documentId}:
 					case <-ctx.Done():
 						return
 					}
@@ -58,8 +65,10 @@ func (s *HeaderSplitter) Run(ctx context.Context, in <-chan string) <-chan strin
 			// Send the content from the last header to the end.
 			output := strings.TrimSpace(content[headerIndices[len(headerIndices)-1][0]:])
 			if output != "" {
+				headerLine := content[headerIndices[len(headerIndices)-1][0]:headerIndices[len(headerIndices)-1][1]]
+				level := countHeaderLevel(headerLine)
 				select {
-				case out <- output:
+				case out <- Section{Text: output, Level: level, DocumentId: documentId}:
 				case <-ctx.Done():
 					return
 				}
@@ -68,4 +77,16 @@ func (s *HeaderSplitter) Run(ctx context.Context, in <-chan string) <-chan strin
 	}()
 
 	return out
+}
+
+func countHeaderLevel(headerLine string) int {
+	level := 0
+	for _, c := range headerLine {
+		if c == '#' {
+			level++
+		} else {
+			break
+		}
+	}
+	return level
 }

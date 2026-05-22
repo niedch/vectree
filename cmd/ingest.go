@@ -68,15 +68,16 @@ Example:
 		ds := datastore.NewSqliteDatastore(db)
 		store := store.NewSqliteStore(ds)
 
-		pipelines, err := pipeline.NewPipelineBuilder(config).BuildSources()
+		pipelineBuilder := pipeline.NewPipelineBuilder(config);
+		sourcePipelines, err :=  pipelineBuilder.BuildSources();
 		if err != nil {
-			log.Fatalf("Failed to build Pipeline: %e", err)
+			log.Fatalf("Failed to build SourcePipelines: %e", err)
 		}
 
 		main := pipeline.NewPipeline()
-		main.AddStage(pipeline.MergePipelines(pipelines))
-		main.AddStage(pipeline.TypedStage(stages.NewMdAstSplitter()))
-		main.AddStage(pipeline.TypedStage(stages.NewBatcher[stages.SectionWithLevel](config.Pipeline.EmbedderBatchSize)))
+		main.AddStage(pipeline.MergePipelines(sourcePipelines))
+		main.AddStage(pipeline.TypedStage(pipelineBuilder.BuildChunking()))
+		main.AddStage(pipeline.TypedStage(stages.NewBatcher[stages.Section](config.Pipeline.EmbedderBatchSize)))
 		main.AddStage(pipeline.TypedStage(stages.NewEmbedder(embedder, config.Pipeline.EmbedderWorkers)))
 		main.AddStage(pipeline.TypedStage(stages.NewBatcher[*stages.EmbedderOut](config.Pipeline.StoreBatchSize)))
 		main.AddStage(pipeline.TypedStage(stages.NewStoreStage(store)))

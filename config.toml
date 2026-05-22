@@ -17,6 +17,9 @@ location = "../obsidian-vault/"
 [database]
 connection_string = "kownledgebase.db?cache=shared&mode=rw"
 
+[chunking]
+strategy = "mdast"
+
 [pipeline]
 embedder_batch_size = 64
 embedder_workers = 8

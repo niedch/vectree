@@ -58,7 +58,7 @@ Text in section 1.`},
 
 			var results []string
 			for res := range out {
-				results = append(results, res)
+				results = append(results, res.Text)
 			}
 
 			assert.Equal(t, tt.expected, results)

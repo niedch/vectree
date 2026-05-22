@@ -48,7 +48,7 @@ Example:
 
 		ingestionPipeline := pipeline.NewPipeline()
 		ingestionPipeline.AddStage(pipeline.MergePipelines(sourcePipeline))
-		ingestionPipeline.AddStage(pipeline.TypedStage(stages.NewMdAstSplitter()))
+		ingestionPipeline.AddStage(pipeline.TypedStage(pipelineBuilder.BuildChunking()))
 
 		outDir := "output"
 		if err := os.MkdirAll(outDir, 0755); err != nil {
@@ -58,15 +58,8 @@ Example:
 		out := ingestionPipeline.Run(ctx)
 		i := 0
 		for output := range out {
-			var content string
-			switch v := output.(type) {
-			case string:
-				content = v
-			case stages.SectionWithLevel:
-				content = v.Text
-			default:
-				continue
-			}
+			v := output.(stages.Section)
+			content := v.Text
 			filename := filepath.Join(outDir, fmt.Sprintf("output_%d.md", i))
 			if err := os.WriteFile(filename, []byte(content), 0644); err != nil {
 				log.Printf("Error writing %s: %v", filename, err)
