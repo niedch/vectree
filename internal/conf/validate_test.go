@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -161,6 +162,9 @@ embedding_model = "text_embedding_004"
 	_, err = f.WriteString(config_str)
 	require.NoError(t, err)
 
-	_, err = loadCustomFile(f.Name())
+	cfg, err := loadCustomFile(f.Name())
 	require.NoError(t, err)
+
+	geminiProviderConfig := cfg.AI.AsGeminiProviderConfig()
+	assert.Equal(t, 768, geminiProviderConfig.VertexSize)
 }
