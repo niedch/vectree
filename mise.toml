@@ -22,7 +22,7 @@ run = "go test ./... -v"
 [tasks.build]
 depends = ["test"]
 description = "Builds project"
-run = "go build -o target/tree-rag ."
+run = "go build -o target/vectree ."
 
 [tasks.dev]
 description = "Run dev build"
@@ -54,6 +54,6 @@ description = "Build docker image"
 run = """
 	docker build
 		--build-arg GEMINI_API_KEY=${GEMINI_API_KEY}
-		-t connectall-doc-rag .
+		-t vectree .
 """
 

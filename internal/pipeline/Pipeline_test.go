@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/niedch/tree-rag/internal/pipeline"
-	"github.com/niedch/tree-rag/internal/stages"
+	"github.com/niedch/vectree/internal/pipeline"
+	"github.com/niedch/vectree/internal/stages"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/niedch/tree-rag/internal/ai"
+	"github.com/niedch/vectree/internal/ai"
 )
 
 type EmbedderOut struct {

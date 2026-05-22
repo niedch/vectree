@@ -3,8 +3,8 @@ package pipeline
 import (
 	"fmt"
 
-	"github.com/niedch/tree-rag/internal/conf"
-	"github.com/niedch/tree-rag/internal/stages"
+	"github.com/niedch/vectree/internal/conf"
+	"github.com/niedch/vectree/internal/stages"
 )
 
 type PipelineBuilder struct {

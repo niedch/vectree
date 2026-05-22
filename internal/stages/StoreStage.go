@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/niedch/tree-rag/internal/store"
+	"github.com/niedch/vectree/internal/store"
 )
 
 type StoreStage struct {

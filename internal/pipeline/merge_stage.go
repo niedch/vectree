@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/niedch/tree-rag/internal/stages"
+	"github.com/niedch/vectree/internal/stages"
 )
 
 // MergeStage merges the outputs of two pipelines into a single output channel.

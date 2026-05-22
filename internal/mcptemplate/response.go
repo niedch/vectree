@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/niedch/tree-rag/internal/datastore"
+	"github.com/niedch/vectree/internal/datastore"
 )
 
 //go:embed template/mcp_response.tmpl

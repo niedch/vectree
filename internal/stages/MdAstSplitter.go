@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/niedch/tree-rag/internal/mdast"
+	"github.com/niedch/vectree/internal/mdast"
 )
 
 type SectionWithLevel struct {

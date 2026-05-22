@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/niedch/tree-rag/internal/datastore"
+	"github.com/niedch/vectree/internal/datastore"
 )
 
 type SqliteStore struct {

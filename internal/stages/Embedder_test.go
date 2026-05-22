@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/niedch/tree-rag/internal/ai"
+	"github.com/niedch/vectree/internal/ai"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

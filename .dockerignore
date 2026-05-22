@@ -15,5 +15,5 @@ temp/
 .DS_Store
 
 # Executables
-connectall-doc-rag
+vectree
 Dockerfile
