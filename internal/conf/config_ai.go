@@ -22,6 +22,12 @@ type AI struct {
 	URL            string     `koanf:"url"`
 }
 
+type GeminiProviderConfig struct {
+	AIBase
+	EmbeddingModel string `validate:"required"`
+	VertexSize     int
+}
+
 func (a AI) AsGeminiProviderConfig() *GeminiProviderConfig {
 	if a.Provider != GEMINI_PROVIDER {
 		return nil
@@ -38,6 +44,12 @@ func (a AI) AsGeminiProviderConfig() *GeminiProviderConfig {
 	}
 }
 
+type OpenAIProviderConfig struct {
+	AIBase
+	EmbeddingModel string `validate:"required"`
+	URL            string `validate:"omitempty,url"`
+}
+
 func (a AI) AsOpenAIProviderConfig() *OpenAIProviderConfig {
 	if a.Provider != OPENAI_PROVIDER {
 		return nil
@@ -49,6 +61,12 @@ func (a AI) AsOpenAIProviderConfig() *OpenAIProviderConfig {
 	}
 }
 
+type OllamaProviderConfig struct {
+	AIBase
+	EmbeddingModel string `validate:"required"`
+	URL            string `validate:"required,url"`
+}
+
 func (a AI) AsOllamaProviderConfig() *OllamaProviderConfig {
 	if a.Provider != OLLAMA_PROVIDER {
 		return nil
@@ -58,24 +76,6 @@ func (a AI) AsOllamaProviderConfig() *OllamaProviderConfig {
 		EmbeddingModel: a.EmbeddingModel,
 		URL:            a.URL,
 	}
-}
-
-type GeminiProviderConfig struct {
-	AIBase
-	EmbeddingModel string `validate:"required"`
-	VertexSize     int
-}
-
-type OpenAIProviderConfig struct {
-	AIBase
-	EmbeddingModel string `validate:"required"`
-	URL            string `validate:"omitempty,url"`
-}
-
-type OllamaProviderConfig struct {
-	AIBase
-	EmbeddingModel string `validate:"required"`
-	URL            string `validate:"required,url"`
 }
 
 func (p AIProvider) String() string {
