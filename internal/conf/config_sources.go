@@ -21,6 +21,13 @@ type Source struct {
 	Selector string     `koanf:"selector"`
 }
 
+type HttpSourceConfig struct {
+	SourceBase
+	URL      string `validate:"required,url"`
+	MaxDepth int
+	Selector string
+}
+
 func (s Source) AsHttp() *HttpSourceConfig {
 	if s.Type != HTTP_SOURCE_TYPE {
 		return nil
@@ -33,6 +40,11 @@ func (s Source) AsHttp() *HttpSourceConfig {
 	}
 }
 
+type MarkdownSourceConfig struct {
+	SourceBase
+	Location string `validate:"required,dirpath"`
+}
+
 func (s Source) AsMarkdown() *MarkdownSourceConfig {
 	if s.Type != MARKDOWN_SOURCE_TYPE {
 		return nil
@@ -43,14 +55,4 @@ func (s Source) AsMarkdown() *MarkdownSourceConfig {
 	}
 }
 
-type HttpSourceConfig struct {
-	SourceBase
-	URL      string `validate:"required,url"`
-	MaxDepth int
-	Selector string
-}
 
-type MarkdownSourceConfig struct {
-	SourceBase
-	Location string `validate:"required,dirpath"`
-}
