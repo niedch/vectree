@@ -58,7 +58,7 @@ Example:
 			log.Fatal("Error loading config: ", err)
 		}
 
-		embedder, err := ai.NewGeminiEmbedder(ctx, config.GEMINI_API_KEY, config.AI.EmbeddingModel)
+		embedder, err := ai.NewGeminiEmbedder(ctx, config.AI.AsGeminiProviderConfig())
 		if err != nil {
 			log.Fatal("Error initializing embedding model: ", err)
 		}

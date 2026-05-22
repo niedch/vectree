@@ -20,18 +20,22 @@ type AI struct {
 	VertexSize     int        `koanf:"vertex_size"`
 	Provider       AIProvider `koanf:"provider"`
 	URL            string     `koanf:"url"`
+	GeminiAPIKey   string     `koanf:"gemini_api_key"`
+	OpenAIAPIKey   string     `koanf:"openai_api_key"`
 }
 
 type GeminiProviderConfig struct {
 	AIBase
 	EmbeddingModel string `validate:"required"`
 	VertexSize     int
+	APIKey         string `validate:"required"`
 }
 
 func (a AI) AsGeminiProviderConfig() *GeminiProviderConfig {
 	if a.Provider != GEMINI_PROVIDER {
 		return nil
 	}
+
 	vertexSize := a.VertexSize
 	if vertexSize == 0 {
 		vertexSize = DEFAULT_GEMINI_VERTEX_SIZE
@@ -41,6 +45,7 @@ func (a AI) AsGeminiProviderConfig() *GeminiProviderConfig {
 		AIBase:         AIBase{Provider: a.Provider},
 		EmbeddingModel: a.EmbeddingModel,
 		VertexSize:     vertexSize,
+		APIKey:         a.GeminiAPIKey,
 	}
 }
 
@@ -48,6 +53,7 @@ type OpenAIProviderConfig struct {
 	AIBase
 	EmbeddingModel string `validate:"required"`
 	URL            string `validate:"omitempty,url"`
+	APIKey         string `validate:"required"`
 }
 
 func (a AI) AsOpenAIProviderConfig() *OpenAIProviderConfig {
@@ -58,6 +64,7 @@ func (a AI) AsOpenAIProviderConfig() *OpenAIProviderConfig {
 		AIBase:         AIBase{Provider: a.Provider},
 		EmbeddingModel: a.EmbeddingModel,
 		URL:            a.URL,
+		APIKey:         a.OpenAIAPIKey,
 	}
 }
 

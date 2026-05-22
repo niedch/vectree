@@ -18,7 +18,6 @@ func NewStoreStage(datastore store.Datastore) *StoreStage {
 	}
 }
 
-
 func (s *StoreStage) Run(ctx context.Context, in <-chan []*EmbedderOut) <-chan any {
 	out := make(chan any)
 

@@ -52,7 +52,7 @@ The server communicates via stdio and can be integrated with MCP-compatible
 clients like Claude Desktop, Zed, or other AI assistants.
 
 Configuration:
-- Requires GEMINI_API_KEY environment variable
+- Requires GEMINI_API_KEY environment variable mapped to ai.gemini_api_key
 - Uses the same embedding model as ingestion for query encoding
 - Similarity results count configurable via config
 
@@ -77,7 +77,7 @@ Example:
 		}
 		ds := datastore.NewSqliteDatastore(db)
 
-		model, err := ai.NewGeminiEmbedder(context.Background(), config.GEMINI_API_KEY, config.AI.EmbeddingModel)
+		model, err := ai.NewGeminiEmbedder(context.Background(), config.AI.AsGeminiProviderConfig())
 		if err != nil {
 			log.Fatal("Error initializing embedding model: ", err)
 		}

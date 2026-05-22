@@ -16,8 +16,6 @@ type Config struct {
 	Pipeline  Pipeline          `koanf:"pipeline"`
 	AI        AI                `koanf:"ai"`
 	Retrieval Retrieval         `koanf:"retrieval"`
-
-	GEMINI_API_KEY string `koanf:"GEMINI_API_KEY"`
 }
 
 type Database struct {
@@ -82,7 +80,17 @@ func loadDefaults(k *koanf.Koanf) {
 }
 
 func loadEnvironment(k *koanf.Koanf) {
-	k.Load(env.Provider("", ".", nil), nil)
+	envCB := func(key string) string {
+		switch key {
+		case "GEMINI_API_KEY":
+			return "ai.gemini_api_key"
+		case "OPENAI_API_KEY":
+			return "ai.openai_api_key"
+		default:
+			return key
+		}
+	}
+	k.Load(env.Provider("", ".", envCB), nil)
 }
 
 func loadLocalFile(k *koanf.Koanf, filename string) {

@@ -25,13 +25,6 @@ func NewMdAstSplitter() *MdAstSplitter {
 	return &MdAstSplitter{workers: runtime.NumCPU()}
 }
 
-func NewMdAstSplitterWithWorkers(n int) *MdAstSplitter {
-	if n <= 0 {
-		n = runtime.NumCPU()
-	}
-	return &MdAstSplitter{workers: n}
-}
-
 func (s MdAstSplitter) Run(ctx context.Context, in <-chan string) <-chan SectionWithLevel {
 	return WorkerPoolStage(ctx, in, s.workers, s.processDocument)
 }
