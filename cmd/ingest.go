@@ -13,38 +13,35 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	TOC_URL = "https://techdocs.broadcom.com/us/en/ca-enterprise-software/valueops/connectall/4-0/jcr:content.toc.html"
-)
-
 var ingestCmd = &cobra.Command{
 	Use:   "ingest",
-	Short: "Ingest ConnectAll documentation and generate vector embeddings",
-	Long: `The ingest command processes ConnectAll documentation from multiple sources and stores vector embeddings.
+	Short: "Ingest documentation from configured sources and generate vector embeddings",
+	Long: `The ingest command processes documentation from all sources defined in config.toml and stores vector embeddings.
 
-This command runs two parallel ingestion pipelines:
+Sources are defined in the [sources] section of config.toml:
 
-1. Web Documentation Pipeline:
-   - Fetches the table of contents from Broadcom TechDocs (techdocs.broadcom.com)
-   - Downloads all linked documentation pages
-   - Extracts content from HTML <main> tags
+1. Web Documentation Pipeline (type = "http"):
+   - Crawls the configured URL recursively up to max_depth
+   - Extracts content using the configured CSS selector
    - Converts HTML to Markdown format
+   - Parallel crawling with configurable worker count
 
-2. Local Markdown Pipeline:
-   - Scans local markdown files in the ../connectall directory
+2. Local Markdown Pipeline (type = "markdown"):
+   - Scans local markdown files in the configured location directory
    - Filters out node_modules and other irrelevant files
    - Loads markdown file content
 
-Both pipelines then:
+All pipelines then:
    - Split documents using Markdown AST-based header splitting
    - Create overlapping sections with parent context for better retrieval
    - Batch documents for efficient processing (configurable batch size)
-   - Generate embeddings using Google Gemini embedding model
+   - Generate embeddings using the configured AI provider
    - Store chunks with embeddings in SQLite vector database
    - Maintain parent-child relationships between document sections
 
 Configuration:
 - Embedding model: Configurable via config (default: text-embedding-004)
+- AI provider: gemini, openai, or ollama (configurable)
 - Batch size: Configurable for both embedding and storage stages
 - Workers: Parallel embedding generation (default: 8 workers)
 - Database: SQLite with vec0 extension for vector similarity search

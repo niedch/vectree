@@ -17,42 +17,43 @@ import (
 // mcpCmd represents the mcp command
 var mcpCmd = &cobra.Command{
 	Use:   "mcp",
-	Short: "Start the MCP server for ConnectAll documentation search",
+	Short: "Start the MCP server for documentation search",
 	Long: `Start the Model Context Protocol (MCP) server that provides AI-powered 
-search capabilities for ConnectAll documentation.
+search capabilities for ingested documentation.
 
 The MCP server exposes tools and prompts for searching and navigating documentation:
 
 Tools:
-  1. search-documentation
-     - Performs semantic search across all ingested documentation
-     - Uses vector similarity to find relevant content
-     - Returns ranked results with document IDs and metadata
-     - Accepts natural language queries
+   1. search-documentation
+      - Performs semantic search across all ingested documentation
+      - Uses vector similarity to find relevant content
+      - Returns ranked results with document IDs and metadata
+      - Accepts natural language queries
 
-  2. get-parent-context
-     - Retrieves the parent document for a given document ID
-     - Useful for understanding broader context of search results
-     - Returns the parent section/heading that contains the document
+   2. get-parent-context
+      - Retrieves the parent document for a given document ID
+      - Useful for understanding broader context of search results
+      - Returns the parent section/heading that contains the document
 
 Prompts:
-  1. connectall-help
-     - Guides LLM to search for help on specific topics
-     - Example topics: authentication, integrations, API
+   1. documentation-help
+      - Guides LLM to search for help on specific topics
+      - Example topics: features, configuration, API
 
-  2. connectall-troubleshoot
-     - Helps troubleshoot issues by searching documentation
-     - Searches for error messages, solutions, and workarounds
+   2. documentation-troubleshoot
+      - Helps troubleshoot issues by searching documentation
+      - Searches for error messages, solutions, and workarounds
 
-  3. connectall-develop
-     - Finds developer documentation and API guides
-     - Useful for building integrations and custom adapters
+   3. documentation-develop
+      - Finds developer documentation and API guides
+      - Useful for building integrations and custom implementations
 
 The server communicates via stdio and can be integrated with MCP-compatible 
 clients like Claude Desktop, Zed, or other AI assistants.
 
 Configuration:
-- Requires GEMINI_API_KEY environment variable mapped to ai.gemini_api_key
+- AI provider configured in config.toml (gemini, openai, or ollama)
+- API keys loaded from environment variables (GEMINI_API_KEY, OPENAI_API_KEY)
 - Uses the same embedding model as ingestion for query encoding
 - Similarity results count configurable via config
 
@@ -60,7 +61,7 @@ Example:
   vectree mcp`,
 	Run: func(cmd *cobra.Command, args []string) {
 		s := server.NewMCPServer(
-			"ConnectAll documentation",
+			"Documentation RAG",
 			"1.0.0",
 			server.WithToolCapabilities(false),
 			server.WithRecovery(),
@@ -84,12 +85,12 @@ Example:
 
 		// Add documentation search tool
 		researchTool := mcp.NewTool("search-documentation",
-			mcp.WithDescription(`Search ConnectAll documentation including official user guides and internal developer documentation. 
-Use this tool to find information about ConnectAll features, configuration, API usage, troubleshooting, and development guidelines. 
+			mcp.WithDescription(`Search ingested documentation including user guides and developer documentation. 
+Use this tool to find information about features, configuration, API usage, troubleshooting, and development guidelines. 
 Performs semantic search to find the most relevant documentation sections.`),
 			mcp.WithString("search-string",
 				mcp.Required(),
-				mcp.Description(`A natural language query describing what you want to know about ConnectAll. 
+				mcp.Description(`A natural language query describing what you want to know. 
 Examples: 'How to configure authentication', 
 					'API endpoints for integration', 
 					'troubleshooting connection errors', 
@@ -173,8 +174,8 @@ the broader topic or section it belongs to.`),
 		})
 
 		// Add prompts to guide LLM usage
-		s.AddPrompt(mcp.NewPrompt("connectall-help",
-			mcp.WithPromptDescription("Get help with ConnectAll features, configuration, or troubleshooting"),
+		s.AddPrompt(mcp.NewPrompt("documentation-help",
+			mcp.WithPromptDescription("Get help with documentation topics, features, or configuration"),
 			mcp.WithArgument("topic",
 				mcp.ArgumentDescription("The specific topic or area you need help with (e.g., authentication, integrations, API)"),
 				mcp.RequiredArgument(),
@@ -182,9 +183,9 @@ the broader topic or section it belongs to.`),
 		), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
 			topic := request.Params.Arguments["topic"]
 
-			message := fmt.Sprintf(`I need help with ConnectAll. Please search the documentation for information about: %s
+			message := fmt.Sprintf(`I need help with the documentation. Please search for information about: %s
 
-Use the search-documentation tool to find relevant information from both official user guides and internal developer documentation.`, topic)
+Use the search-documentation tool to find relevant information from the documentation.`, topic)
 
 			return mcp.NewGetPromptResult("",
 				[]mcp.PromptMessage{
@@ -196,8 +197,8 @@ Use the search-documentation tool to find relevant information from both officia
 			), nil
 		})
 
-		s.AddPrompt(mcp.NewPrompt("connectall-troubleshoot",
-			mcp.WithPromptDescription("Troubleshoot ConnectAll issues by searching documentation for solutions"),
+		s.AddPrompt(mcp.NewPrompt("documentation-troubleshoot",
+			mcp.WithPromptDescription("Troubleshoot issues by searching documentation for solutions"),
 			mcp.WithArgument("issue",
 				mcp.ArgumentDescription("Description of the issue or error you're experiencing"),
 				mcp.RequiredArgument(),
@@ -205,7 +206,7 @@ Use the search-documentation tool to find relevant information from both officia
 		), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
 			issue := request.Params.Arguments["issue"]
 
-			message := fmt.Sprintf(`I'm experiencing an issue with ConnectAll: %s
+			message := fmt.Sprintf(`I'm experiencing an issue: %s
 
 Please search the documentation for troubleshooting information, common solutions, and relevant configuration details.`, issue)
 
@@ -219,8 +220,8 @@ Please search the documentation for troubleshooting information, common solution
 			), nil
 		})
 
-		s.AddPrompt(mcp.NewPrompt("connectall-develop",
-			mcp.WithPromptDescription("Find developer documentation for building with ConnectAll"),
+		s.AddPrompt(mcp.NewPrompt("documentation-develop",
+			mcp.WithPromptDescription("Find developer documentation and API guides"),
 			mcp.WithArgument("dev-topic",
 				mcp.ArgumentDescription("What you want to develop or integrate (e.g., custom adapter, API integration, plugin)"),
 				mcp.RequiredArgument(),
@@ -228,9 +229,9 @@ Please search the documentation for troubleshooting information, common solution
 		), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
 			devTopic := request.Params.Arguments["dev-topic"]
 
-			message := fmt.Sprintf(`I'm developing with ConnectAll and need information about: %s
+			message := fmt.Sprintf(`I need developer documentation and API information about: %s
 
-Please search the internal developer documentation and API guides for relevant information and best practices.`, devTopic)
+Please search the documentation for relevant information and best practices.`, devTopic)
 
 			return mcp.NewGetPromptResult("",
 				[]mcp.PromptMessage{
