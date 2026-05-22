@@ -4,12 +4,15 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"context"
+		"context"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/niedch/vectree/internal/conf"
 	"github.com/niedch/vectree/internal/pipeline"
+	"github.com/niedch/vectree/internal/stages"
 	"github.com/spf13/cobra"
 )
 
@@ -46,20 +49,33 @@ Example:
 
 		ingestionPipeline := pipeline.NewPipeline()
 		ingestionPipeline.AddStage(pipeline.MergePipelines(pipelines))
+		ingestionPipeline.AddStage(pipeline.TypedStage(stages.NewMdAstSplitter()))
 
-		out := ingestionPipeline.Run(ctx)
-		for i := range out {
-			fmt.Printf("%s", i)
+		outDir := "output"
+		if err := os.MkdirAll(outDir, 0755); err != nil {
+			log.Fatal("Error creating output directory: ", err)
 		}
 
-		// p := pipeline.NewPipeline()
-		// p.AddStage(pipeline.TypedStage(stages.NewDirLoader("./test_data/embedder")))
-		// p.AddStage(pipeline.TypedStage(stages.NewDebugStage()))
-		//
-		// out := p.Run(ctx)
-		// for range out {
-		// 	// Pipeline execution happens as we consume the output
-		// }
+		out := ingestionPipeline.Run(ctx)
+		i := 0
+		for output := range out {
+			var content string
+			switch v := output.(type) {
+			case string:
+				content = v
+			case stages.SectionWithLevel:
+				content = v.Text
+			default:
+				continue
+			}
+			filename := filepath.Join(outDir, fmt.Sprintf("output_%d.md", i))
+			if err := os.WriteFile(filename, []byte(content), 0644); err != nil {
+				log.Printf("Error writing %s: %v", filename, err)
+			}
+			i++
+		}
+
+		log.Printf("Ingested: %d Documents", i)
 	},
 }
 

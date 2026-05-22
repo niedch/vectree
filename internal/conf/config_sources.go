@@ -17,6 +17,8 @@ type Source struct {
 	Type     SourceType `koanf:"type"`
 	URL      string     `koanf:"url"`
 	Location string     `koanf:"location"`
+	MaxDepth int        `koanf:"max_depth"`
+	Selector string     `koanf:"selector"`
 }
 
 func (s Source) AsHttp() *HttpSourceConfig {
@@ -26,6 +28,8 @@ func (s Source) AsHttp() *HttpSourceConfig {
 	return &HttpSourceConfig{
 		SourceBase: SourceBase{Name: s.Name, Type: s.Type},
 		URL:        s.URL,
+		MaxDepth:   s.MaxDepth,
+		Selector:   s.Selector,
 	}
 }
 
@@ -41,7 +45,9 @@ func (s Source) AsMarkdown() *MarkdownSourceConfig {
 
 type HttpSourceConfig struct {
 	SourceBase
-	URL string `validate:"required,url"`
+	URL      string `validate:"required,url"`
+	MaxDepth int
+	Selector string
 }
 
 type MarkdownSourceConfig struct {

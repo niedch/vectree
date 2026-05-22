@@ -7,11 +7,12 @@ import (
 )
 
 type FileLoader struct {
-	dirPath string
+	sourceName string
+	dirPath    string
 }
 
-func NewFileLoader() *FileLoader {
-	return &FileLoader{}
+func NewFileLoader(sourceName string) *FileLoader {
+	return &FileLoader{sourceName: sourceName}
 }
 
 func (l FileLoader) Run(ctx context.Context, in <-chan string) <-chan string {
@@ -42,8 +43,8 @@ func (l FileLoader) Run(ctx context.Context, in <-chan string) <-chan string {
 			}
 		}
 
-		log.Printf("FileLoader: Loaded %d files, total size: %d bytes (%.2f MB)\n",
-			fileCount, totalSize, float64(totalSize)/(1024*1024))
+		log.Printf("[%s] Loaded %d files, total size: %d bytes (%.2f MB)\n",
+			l.sourceName, fileCount, totalSize, float64(totalSize)/(1024*1024))
 	}()
 
 	return out
