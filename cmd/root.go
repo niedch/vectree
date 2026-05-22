@@ -8,17 +8,17 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "vectree",
-	Short: "Document ingestion and RAG system for ConnectAll documentation",
+	Short: "Document ingestion and RAG system for configurable documentation sources",
 	Long: `vectree is a command-line tool for building and serving a RAG (Retrieval-Augmented Generation) 
-system for ConnectAll documentation.
+system from configurable documentation sources.
 
 This tool provides three main commands:
 
 1. ingest - Document Ingestion Pipeline
-   - Crawls ConnectAll documentation from Broadcom TechDocs
-   - Loads local markdown files from the ../connectall directory
+   - Crawls web documentation from sources defined in config.toml
+   - Loads local markdown files from directories specified in config.toml
    - Splits documents using Markdown AST-based header splitting
-   - Generates vector embeddings using Google's Gemini embedding model
+   - Generates vector embeddings using the configured AI provider
    - Stores embeddings in SQLite database with vec0 extension
    - Maintains hierarchical document relationships (parent-child)
 

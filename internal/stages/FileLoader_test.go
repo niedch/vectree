@@ -8,7 +8,7 @@ import (
 )
 
 func TestFileLoader_Run(t *testing.T) {
-	loader := NewFileLoader()
+	loader := NewFileLoader("Test")
 	in := make(chan string, 1)
 	in <- "../../test_data/file_loader/Markdown.md"
 	close(in)
@@ -24,7 +24,7 @@ func TestFileLoader_Run(t *testing.T) {
 }
 
 func TestFileLoader_Run_NonExistentFile(t *testing.T) {
-	loader := NewFileLoader()
+	loader := NewFileLoader("Test")
 	in := make(chan string, 1)
 	in <- "../../test_data/file_loader/NonExsiting.md"
 	close(in)
@@ -40,7 +40,7 @@ func TestFileLoader_Run_NonExistentFile(t *testing.T) {
 }
 
 func TestFileLoader_Run_EmptyFile(t *testing.T) {
-	loader := NewFileLoader()
+	loader := NewFileLoader("Test")
 	in := make(chan string, 1)
 	in <- "../../test_data/file_loader/EmptyMarkdown.md"
 	close(in)

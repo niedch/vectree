@@ -47,14 +47,13 @@ func (b *PipelineBuilder) BuildForSource(name string) (*Pipeline, error) {
 
 func BuildHttpPipeline(cfg *conf.HttpSourceConfig, pipelineCfg conf.Pipeline) *Pipeline {
 	p := NewPipeline()
-	p.AddStage(TypedStage(stages.NewDocTocLoader(cfg.Name, cfg.URL)))
-	p.AddStage(TypedStage(stages.NewContentLoader(pipelineCfg.EmbedderWorkers)))
+	p.AddStage(TypedStage(stages.NewWebCrawler(cfg.Name, cfg.URL, cfg.MaxDepth, cfg.Selector, pipelineCfg.CrawlerWorkers)))
 	return p
 }
 
 func BuildMarkdownPipeline(cfg *conf.MarkdownSourceConfig) *Pipeline {
 	p := NewPipeline()
 	p.AddStage(TypedStage(stages.NewDirLoader(cfg.Location)))
-	p.AddStage(TypedStage(stages.NewFileLoader()))
+	p.AddStage(TypedStage(stages.NewFileLoader(cfg.Name)))
 	return p
 }

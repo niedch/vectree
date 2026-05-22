@@ -91,7 +91,7 @@ func BenchmarkPipeline(b *testing.B) {
 	p := NewPipeline()
 	p.AddStage(TypedStage(stages.NewDirLoader(benchDataDir)))
 	p.AddStage(TypedStage(stages.NewIndexFileFilter()))
-	p.AddStage(TypedStage(stages.NewFileLoader()))
+	p.AddStage(TypedStage(stages.NewFileLoader("Test")))
 	p.AddStage(TypedStage(stages.NewMdAstSplitter()))
 	p.AddStage(TypedStage(stages.NewBatcher[stages.SectionWithLevel](64)))
 	p.AddStage(TypedStage(stages.NewEmbedder(benchmarkModel, 8)))

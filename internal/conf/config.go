@@ -26,7 +26,7 @@ type Pipeline struct {
 	EmbedderBatchSize int `koanf:"embedder_batch_size"`
 	EmbedderWorkers   int `koanf:"embedder_workers"`
 	StoreBatchSize    int `koanf:"store_batch_size"`
-	DocuLoaderWorkers int `koanf:"docu_loader_workers"`
+	CrawlerWorkers    int `koanf:"crawler_workers"`
 }
 
 type Retrieval struct {
@@ -71,7 +71,7 @@ func loadDefaults(k *koanf.Koanf) {
 			EmbedderBatchSize: 64,
 			EmbedderWorkers:   8,
 			StoreBatchSize:    8,
-			DocuLoaderWorkers: 10,
+			CrawlerWorkers:    4,
 		},
 		Database: Database{
 			ConnectionString: "kownledgebase.db?cache=shared&mode=rw",

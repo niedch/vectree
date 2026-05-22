@@ -15,9 +15,9 @@ func TestValidateSuccess(t *testing.T) {
 	defer f.Close()
 
 	config_str := `
-[sources.tech-docs]
+[sources.docs]
 type = "http"
-url = "https://techdocs.broadcom.com/us/en/ca-enterprise-software/valueops/connectall/4-0/jcr:content.toc.html"
+url = "https://docs.example.com/"
 
 [ai]
 provider = "gemini"
