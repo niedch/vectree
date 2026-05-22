@@ -6,7 +6,7 @@ const (
 	OLLAMA_PROVIDER AIProvider = "ollama"
 )
 const (
-	DEFAULT_GEMINI_VERTEX_SIZE = 3072
+	DEFAULT_VERTEX_SIZE = 3072
 )
 
 type AIProvider string
@@ -38,7 +38,7 @@ func (a AI) AsGeminiProviderConfig() *GeminiProviderConfig {
 
 	vertexSize := a.VertexSize
 	if vertexSize == 0 {
-		vertexSize = DEFAULT_GEMINI_VERTEX_SIZE
+		vertexSize = DEFAULT_VERTEX_SIZE
 	}
 
 	return &GeminiProviderConfig{

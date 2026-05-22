@@ -57,12 +57,12 @@ Example:
 
 		embedder, err := ai.NewGeminiEmbedder(ctx, config.AI.AsGeminiProviderConfig())
 		if err != nil {
-			log.Fatal("Error initializing embedding model: ", err)
+			log.Fatalf("Error initializing embedding model: %e", err)
 		}
 
 		db, err := datastore.OpenConnection(config)
 		if err != nil {
-			panic(err)
+			log.Fatalf("Error creating Database connection: %e", err)
 		}
 
 		ds := datastore.NewSqliteDatastore(db)

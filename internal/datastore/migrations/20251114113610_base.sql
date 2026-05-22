@@ -10,10 +10,6 @@ CREATE TABLE IF NOT EXISTS document (
   parent_id INTEGER DEFAULT NULL
 );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS embedding USING vec0(
-  embedding FLOAT[3072]
-);
-
 -- Mapping table to link documents to embeddings
 CREATE TABLE IF NOT EXISTS document_embedding (
   document_id INTEGER NOT NULL,
