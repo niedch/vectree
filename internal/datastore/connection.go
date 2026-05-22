@@ -17,6 +17,11 @@ func OpenConnection(config *conf.Config) (*sqlx.DB, error) {
 		return nil, err
 	}
 
-	RunMigrations(db.Unsafe().DB)
-	return db, nil
+	vertexSize := config.AI.VertexSize
+	if vertexSize == 0 {
+		vertexSize = conf.DEFAULT_VERTEX_SIZE
+	}
+
+	err = RunMigrations(db.Unsafe().DB, config)
+	return db, err
 }

@@ -53,6 +53,9 @@ func marshalConf(k *koanf.Koanf) *Config {
 
 func loadDefaults(k *koanf.Koanf) {
 	k.Load(structs.Provider(Config{
+		AI: AI{
+			VertexSize: DEFAULT_VERTEX_SIZE,
+		},
 		Chunking: Chunking{
 			Strategy: MDAST_STRATEGY,
 		},

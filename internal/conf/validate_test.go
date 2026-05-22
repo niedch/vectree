@@ -191,5 +191,5 @@ embedding_model = "text_embedding_004"
 	require.NoError(t, err)
 
 	geminiProviderConfig := cfg.AI.AsGeminiProviderConfig()
-	assert.Equal(t, 768, geminiProviderConfig.VertexSize)
+	assert.Equal(t, DEFAULT_VERTEX_SIZE, geminiProviderConfig.VertexSize)
 }
