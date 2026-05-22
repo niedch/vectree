@@ -1,7 +1,6 @@
 package stages
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -42,8 +41,7 @@ func TestIndexFileFilter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+			ctx := t.Context()
 
 			in := make(chan string, len(tt.input))
 			for _, path := range tt.input {

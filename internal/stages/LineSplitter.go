@@ -17,10 +17,9 @@ func (s LineSplitter) Run(ctx context.Context, in <-chan string) <-chan string {
 		defer close(out)
 		for doc := range in {
 
-			lines := strings.Split(doc, "\n")
+			lines := strings.SplitSeq(doc, "\n")
 
-			for _, line := range lines {
-
+			for line := range lines {
 				if len(line) == 0 {
 					continue
 				}

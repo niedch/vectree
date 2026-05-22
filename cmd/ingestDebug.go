@@ -39,9 +39,9 @@ Example:
 			log.Fatal("Error loading config: ", err)
 		}
 
-		pipelineBuilder := pipeline.NewPipelineBuilder(config);
+		pipelineBuilder := pipeline.NewPipelineBuilder(config)
 
-		sourcePipeline, err := pipelineBuilder.BuildSources();
+		sourcePipeline, err := pipelineBuilder.BuildSources()
 		if err != nil {
 			log.Fatalf("Failed to build Sources Pipeline: %e", err)
 		}

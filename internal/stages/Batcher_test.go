@@ -80,7 +80,7 @@ func TestBatcher_Run_DefaultSize(t *testing.T) {
 	in := make(chan string, 33)
 	out := b.Run(context.Background(), in)
 
-	for i := 0; i < 33; i++ {
+	for range 33 {
 		in <- "a"
 	}
 	close(in)
@@ -106,7 +106,7 @@ func TestBatcher_Run_ContextCancellation(t *testing.T) {
 
 	go func() {
 		defer close(in)
-		for i := 0; i < 5; i++ {
+		for range 5 {
 			select {
 			case in <- "a":
 			case <-ctx.Done():
