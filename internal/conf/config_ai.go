@@ -6,7 +6,7 @@ const (
 	OLLAMA_PROVIDER AIProvider = "ollama"
 )
 const (
-	DEFAULT_GEMINI_VERTEX_SIZE = 768
+	DEFAULT_GEMINI_VERTEX_SIZE = 3072
 )
 
 type AIProvider string
