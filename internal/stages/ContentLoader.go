@@ -36,18 +36,18 @@ func (l ContentLoader) Run(ctx context.Context, in <-chan string) <-chan string 
 		urlCount := 0
 		var totalSize uint64 = 0
 
-		innerOut := ParallelStage(ctx, in, l.concurrency, func(ctx context.Context, url string) (string, bool) {
+		innerOut := WorkerPoolStage(ctx, in, l.concurrency, func(ctx context.Context, url string, out chan<- string) error {
 			content, err := l.fetchAndExtractMain(ctx, url)
-
 			if err != nil {
-				return "", false
+				return err
 			}
 
 			if content == "" {
-				return "", false
+				return nil
 			}
 
-			return content, true
+			out <- content
+			return nil
 		})
 
 		for content := range innerOut {

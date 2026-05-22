@@ -82,7 +82,7 @@ Example:
 		main.AddStage(pipeline.TypedStage(stages.NewBatcher[stages.SectionWithLevel](config.Pipeline.EmbedderBatchSize)))
 		main.AddStage(pipeline.TypedStage(stages.NewEmbedder(embedder, config.Pipeline.EmbedderWorkers)))
 		main.AddStage(pipeline.TypedStage(stages.NewBatcher[*stages.EmbedderOut](config.Pipeline.StoreBatchSize)))
-		main.AddStage(pipeline.TypedStage(stages.NewStore(store)))
+		main.AddStage(pipeline.TypedStage(stages.NewStoreStage(store)))
 
 		out := main.Run(ctx)
 		for range out {

@@ -11,10 +11,6 @@ func NewMockBenchmarkStore() *MockBenchmarkStore {
 	return &MockBenchmarkStore{}
 }
 
-func (dc *MockBenchmarkStore) Initialize(ctx context.Context) error {
-	return nil
-}
-
 func (dc *MockBenchmarkStore) InsertChunks(ctx context.Context, chunks []Chunk) (int, error) {
 	return len(chunks), nil
 }

@@ -16,8 +16,6 @@ type Chunk struct {
 }
 
 type Datastore interface {
-	Initialize(ctx context.Context) error
-
 	InsertChunks(ctx context.Context, chunks []Chunk) (int, error)
 	SearchIndex(ctx context.Context, searchToken []float32) ([]SearchResult, error)
 }

@@ -37,57 +37,6 @@ func (_m *MockDatastore) EXPECT() *MockDatastore_Expecter {
 	return &MockDatastore_Expecter{mock: &_m.Mock}
 }
 
-// Initialize provides a mock function for the type MockDatastore
-func (_mock *MockDatastore) Initialize(ctx context.Context) error {
-	ret := _mock.Called(ctx)
-
-	if len(ret) == 0 {
-		panic("no return value specified for Initialize")
-	}
-
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
-		r0 = returnFunc(ctx)
-	} else {
-		r0 = ret.Error(0)
-	}
-	return r0
-}
-
-// MockDatastore_Initialize_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Initialize'
-type MockDatastore_Initialize_Call struct {
-	*mock.Call
-}
-
-// Initialize is a helper method to define mock.On call
-//   - ctx context.Context
-func (_e *MockDatastore_Expecter) Initialize(ctx interface{}) *MockDatastore_Initialize_Call {
-	return &MockDatastore_Initialize_Call{Call: _e.mock.On("Initialize", ctx)}
-}
-
-func (_c *MockDatastore_Initialize_Call) Run(run func(ctx context.Context)) *MockDatastore_Initialize_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		run(
-			arg0,
-		)
-	})
-	return _c
-}
-
-func (_c *MockDatastore_Initialize_Call) Return(err error) *MockDatastore_Initialize_Call {
-	_c.Call.Return(err)
-	return _c
-}
-
-func (_c *MockDatastore_Initialize_Call) RunAndReturn(run func(ctx context.Context) error) *MockDatastore_Initialize_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // InsertChunks provides a mock function for the type MockDatastore
 func (_mock *MockDatastore) InsertChunks(ctx context.Context, chunks []Chunk) (int, error) {
 	ret := _mock.Called(ctx, chunks)

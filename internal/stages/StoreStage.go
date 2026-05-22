@@ -8,25 +8,21 @@ import (
 	"github.com/niedch/tree-rag/internal/store"
 )
 
-type Store struct {
+type StoreStage struct {
 	datastore store.Datastore
 }
 
-func NewStore(datastore store.Datastore) *Store {
-	return &Store{
+func NewStoreStage(datastore store.Datastore) *StoreStage {
+	return &StoreStage{
 		datastore: datastore,
 	}
 }
 
-func (s *Store) Run(ctx context.Context, in <-chan []*EmbedderOut) <-chan any {
+func (s *StoreStage) Run(ctx context.Context, in <-chan []*EmbedderOut) <-chan any {
 	out := make(chan any)
 
 	go func() {
 		defer close(out)
-		err := s.datastore.Initialize(ctx)
-		if err != nil {
-			log.Fatalln(err)
-		}
 
 		count := 0
 		var size uint64 = 0

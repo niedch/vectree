@@ -15,11 +15,6 @@ func NewSqliteStore(datastore *datastore.SqliteDatastore) *SqliteStore {
 	return &SqliteStore{datastore: datastore}
 }
 
-// Initialize is a no-op for SqliteStore since the datastore is already initialized
-func (s *SqliteStore) Initialize(ctx context.Context) error {
-	return nil
-}
-
 // InsertChunks inserts multiple chunks (text + embeddings) into the database
 // Returns the number of successfully inserted chunks
 // This function maintains parent-child relationships based on heading levels within each document
