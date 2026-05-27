@@ -41,7 +41,7 @@ func (g *GitHubCloner) Run(ctx context.Context, _ <-chan any) <-chan string {
 			log.Printf("[%s] Failed to create temp dir: %v", g.sourceName, err)
 			return
 		}
-		defer func() {
+		go func() {
 			<-ctx.Done()
 			os.RemoveAll(tmpDir)
 		}()
@@ -69,15 +69,19 @@ func (g *GitHubCloner) Run(ctx context.Context, _ <-chan any) <-chan string {
 
 		if g.branch != "" {
 			cloneOpts.ReferenceName = plumbing.ReferenceName("refs/heads/" + g.branch)
+			log.Printf("[%s] Cloning branch %q", g.sourceName, g.branch)
+		} else {
+			log.Printf("[%s] Cloning default branch", g.sourceName)
 		}
 
+		log.Printf("[%s] Cloning %s", g.sourceName, g.repo)
 		_, err = gogit.PlainClone(tmpDir, false, cloneOpts)
 		if err != nil {
 			log.Printf("[%s] Failed to clone repo %s: %v", g.sourceName, g.repo, err)
 			return
 		}
 
-		log.Printf("[%s] Cloned repo %s", g.sourceName, g.repo)
+		log.Printf("[%s] Successfully cloned repo %s", g.sourceName, g.repo)
 
 		root := tmpDir
 		if g.subdir != "" {

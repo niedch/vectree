@@ -24,7 +24,7 @@ func (l DirLoader) Run(ctx context.Context, in <-chan any) <-chan string {
 		defer close(out)
 
 		walk := func(dir string) {
-			err := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
+			filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 				if err != nil {
 					return err
 				}
@@ -40,21 +40,18 @@ func (l DirLoader) Run(ctx context.Context, in <-chan any) <-chan string {
 				}
 				return nil
 			})
-			if err != nil {
-				return
-			}
 		}
 
 		if l.dirPath != "" {
 			walk(l.dirPath)
-		}
-
-		for raw := range in {
-			dir, ok := raw.(string)
-			if !ok {
-				continue
+		} else {
+			for raw := range in {
+				dir, ok := raw.(string)
+				if !ok {
+					continue
+				}
+				walk(dir)
 			}
-			walk(dir)
 		}
 	}()
 
