@@ -13,7 +13,7 @@ type = "markdown"
 location = "../obsidian-vault/"
 
 [database]
-connection_string = "kownledgebase.db?cache=shared&mode=rw"
+connection_string = "kownledgebase.db"
 
 [chunking]
 strategy = "mdast"

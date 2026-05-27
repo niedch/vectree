@@ -3,36 +3,10 @@ package datastore
 import (
 	"context"
 	"database/sql"
-	"encoding/binary"
 	"fmt"
-	"unsafe"
 
-	sqlite_vec "github.com/asg017/sqlite-vec-go-bindings/cgo"
 	"github.com/jmoiron/sqlx"
 )
-
-// deserializeFloat32 converts bytes to float32 slice
-// sqlite-vec stores vectors as little-endian float32 arrays
-func deserializeFloat32(data []byte) ([]float32, error) {
-	if len(data)%4 != 0 {
-		return nil, fmt.Errorf("invalid data length: %d (must be multiple of 4)", len(data))
-	}
-
-	count := len(data) / 4
-	result := make([]float32, count)
-
-	for i := range count {
-		bits := binary.LittleEndian.Uint32(data[i*4 : (i+1)*4])
-		result[i] = float32frombits(bits)
-	}
-
-	return result, nil
-}
-
-// float32frombits converts uint32 bits to float32
-func float32frombits(bits uint32) float32 {
-	return *(*float32)(unsafe.Pointer(&bits))
-}
 
 type Querier interface {
 	InsertDocument(ctx context.Context, document Document, embedding Embedding) (int64, error)
@@ -73,7 +47,7 @@ func (ds *SqliteDatastore) InsertDocument(ctx context.Context, document Document
 	}
 
 	// Serialize and insert embedding
-	v, err := sqlite_vec.SerializeFloat32(embedding.Embedding)
+	v, err := SerializeFloat32(embedding.Embedding)
 	if err != nil {
 		return 0, fmt.Errorf("failed to serialize embedding: %w", err)
 	}
@@ -272,7 +246,7 @@ func (ds *SqliteDatastore) SearchSimilarEmbeddings(ctx context.Context, queryVec
 		LIMIT ?
 	`
 
-	v, err := sqlite_vec.SerializeFloat32(queryVector)
+	v, err := SerializeFloat32(queryVector)
 	if err != nil {
 		return nil, fmt.Errorf("failed to serialize query vector: %w", err)
 	}
