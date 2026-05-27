@@ -1,0 +1,10 @@
+---
+name: greeter
+description: A friendly greeting prompt
+input:
+  schema:
+    name: string
+    language?: string
+---
+Hello {{name}}!
+{{#if language}}You speak {{language}}.{{/if}}

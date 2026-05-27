@@ -11,6 +11,7 @@ import (
 	"github.com/niedch/vectree/internal/conf"
 	"github.com/niedch/vectree/internal/datastore"
 	"github.com/niedch/vectree/internal/mcptemplate"
+	"github.com/niedch/vectree/internal/promptloader"
 	"github.com/spf13/cobra"
 )
 
@@ -36,17 +37,10 @@ Tools:
       - Returns the parent section/heading that contains the document
 
 Prompts:
-   1. documentation-help
-      - Guides LLM to search for help on specific topics
-      - Example topics: features, configuration, API
-
-   2. documentation-troubleshoot
-      - Helps troubleshoot issues by searching documentation
-      - Searches for error messages, solutions, and workarounds
-
-   3. documentation-develop
-      - Finds developer documentation and API guides
-      - Useful for building integrations and custom implementations
+   - Prompts are loaded from the configured dotprompt library directory
+   - Each .prompt file in the library becomes a prompt with its defined
+     arguments and description
+   - Documentation prompts guide LLM usage of the search tools
 
 The server communicates via stdio and can be integrated with MCP-compatible 
 clients like Claude Desktop, Zed, or other AI assistants.
@@ -173,75 +167,44 @@ the broader topic or section it belongs to.`),
 			return mcp.NewToolResultText(resultString), nil
 		})
 
-		// Add prompts to guide LLM usage
-		s.AddPrompt(mcp.NewPrompt("documentation-help",
-			mcp.WithPromptDescription("Get help with documentation topics, features, or configuration"),
-			mcp.WithArgument("topic",
-				mcp.ArgumentDescription("The specific topic or area you need help with (e.g., authentication, integrations, API)"),
-				mcp.RequiredArgument(),
-			),
-		), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
-			topic := request.Params.Arguments["topic"]
-
-			message := fmt.Sprintf(`I need help with the documentation. Please search for information about: %s
-
-Use the search-documentation tool to find relevant information from the documentation.`, topic)
-
-			return mcp.NewGetPromptResult("",
-				[]mcp.PromptMessage{
-					mcp.NewPromptMessage(
-						mcp.RoleUser,
-						mcp.NewTextContent(message),
-					),
-				},
-			), nil
-		})
-
-		s.AddPrompt(mcp.NewPrompt("documentation-troubleshoot",
-			mcp.WithPromptDescription("Troubleshoot issues by searching documentation for solutions"),
-			mcp.WithArgument("issue",
-				mcp.ArgumentDescription("Description of the issue or error you're experiencing"),
-				mcp.RequiredArgument(),
-			),
-		), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
-			issue := request.Params.Arguments["issue"]
-
-			message := fmt.Sprintf(`I'm experiencing an issue: %s
-
-Please search the documentation for troubleshooting information, common solutions, and relevant configuration details.`, issue)
-
-			return mcp.NewGetPromptResult("",
-				[]mcp.PromptMessage{
-					mcp.NewPromptMessage(
-						mcp.RoleUser,
-						mcp.NewTextContent(message),
-					),
-				},
-			), nil
-		})
-
-		s.AddPrompt(mcp.NewPrompt("documentation-develop",
-			mcp.WithPromptDescription("Find developer documentation and API guides"),
-			mcp.WithArgument("dev-topic",
-				mcp.ArgumentDescription("What you want to develop or integrate (e.g., custom adapter, API integration, plugin)"),
-				mcp.RequiredArgument(),
-			),
-		), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
-			devTopic := request.Params.Arguments["dev-topic"]
-
-			message := fmt.Sprintf(`I need developer documentation and API information about: %s
-
-Please search the documentation for relevant information and best practices.`, devTopic)
-
-			return mcp.NewGetPromptResult("",
-				[]mcp.PromptMessage{
-					mcp.NewPromptMessage(
-						mcp.RoleUser,
-						mcp.NewTextContent(message),
-					),
-				},
-			), nil
-		})
+		// Load custom prompts from dotprompt library
+		if config.Prompts.Path != "" {
+			customPrompts, err := promptloader.LoadDir(config.Prompts.Path)
+			if err != nil {
+				log.Fatal("Error loading prompts: ", err)
+			}
+			for _, p := range customPrompts {
+				p := p
+				desc := p.Description
+				if desc == "" {
+					desc = fmt.Sprintf("Custom prompt: %s", p.Name)
+				}
+				opts := []mcp.PromptOption{
+					mcp.WithPromptDescription(desc),
+				}
+				for _, arg := range p.Arguments {
+					argOpts := []mcp.ArgumentOption{}
+					if arg.Description != "" {
+						argOpts = append(argOpts, mcp.ArgumentDescription(arg.Description))
+					}
+					if arg.Required {
+						argOpts = append(argOpts, mcp.RequiredArgument())
+					}
+					opts = append(opts, mcp.WithArgument(arg.Name, argOpts...))
+				}
+				s.AddPrompt(mcp.NewPrompt(p.Name, opts...), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
+					rendered, err := promptloader.RenderPrompt(p.Source, request.Params.Arguments)
+					if err != nil {
+						return nil, fmt.Errorf("rendering prompt: %w", err)
+					}
+					return mcp.NewGetPromptResult("",
+						[]mcp.PromptMessage{
+							mcp.NewPromptMessage(mcp.RoleUser, mcp.NewTextContent(rendered)),
+						},
+					), nil
+				})
+			}
+		}
 
 		// Start the server
 		if err := server.ServeStdio(s); err != nil {

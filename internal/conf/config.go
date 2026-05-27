@@ -17,6 +17,7 @@ type Config struct {
 	Chunking  Chunking          `koanf:"chunking"`
 	AI        AI                `koanf:"ai"`
 	Retrieval Retrieval         `koanf:"retrieval"`
+	Prompts   Prompts           `koanf:"prompts"`
 }
 
 func Load() (*Config, error) {

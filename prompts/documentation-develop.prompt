@@ -1,0 +1,10 @@
+---
+name: documentation-develop
+description: Find developer documentation and API guides
+input:
+  schema:
+    dev-topic: string
+---
+I need developer documentation and API information about: {{dev-topic}}
+
+Please search the documentation for relevant information and best practices.

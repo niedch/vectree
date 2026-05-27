@@ -1,0 +1,10 @@
+---
+name: documentation-help
+description: Get help with documentation topics, features, or configuration
+input:
+  schema:
+    topic: string
+---
+I need help with the documentation. Please search for information about: {{topic}}
+
+Use the search-documentation tool to find relevant information from the documentation.
