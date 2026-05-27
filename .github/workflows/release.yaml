@@ -4,6 +4,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -12,8 +15,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Set up Go
-      uses: actions/setup-go@v6
+    - uses: actions/setup-go@v6
       with:
         go-version-file: go.mod
 
@@ -23,11 +25,18 @@ jobs:
     - name: Test
       run: go test -v ./...
 
+    - uses: mlugg/setup-zig@v2
+
+    - name: Download macOS SDK
+      run: |
+        curl -L https://github.com/joseluisq/macosx-sdks/releases/download/13.3/MacOSX13.3.sdk.tar.xz -o sdk.tar.xz
+        tar -xf sdk.tar.xz
+        echo "SDK_PATH=$PWD/MacOSX13.3.sdk" >> $GITHUB_ENV
+
     - uses: goreleaser/goreleaser-action@v7
-      if: success() && startsWith(github.ref, 'refs/tags/')
       with:
         version: latest
-        args: release
+        args: release --clean
       env:
         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 

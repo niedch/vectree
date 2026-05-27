@@ -13,13 +13,37 @@ before:
 
 builds:
   - env:
-      - CGO_ENABLED=0
+      - CGO_ENABLED=1
+      - >-
+        {{- if eq .Os "darwin" }}SDKROOT={{ .Env.SDK_PATH }}{{- end }}
+      - >-
+        {{- if eq .Os "darwin" }}MACOSX_DEPLOYMENT_TARGET=11.0{{- end }}
+      - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64" }}CC=zig cc -target x86_64-macos -isysroot {{ .Env.SDK_PATH }}{{- end }}
+          {{- if eq .Arch "arm64" }}CC=zig cc -target aarch64-macos -isysroot {{ .Env.SDK_PATH }}{{- end }}
+        {{- else if eq .Os "linux" }}
+          {{- if eq .Arch "amd64" }}CC=zig cc -target x86_64-linux-musl -lc{{- end }}
+          {{- if eq .Arch "arm64" }}CC=zig cc -target aarch64-linux-musl -lc{{- end }}
+        {{- end }}
+      - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64" }}CXX=zig c++ -target x86_64-macos -isysroot {{ .Env.SDK_PATH }}{{- end }}
+          {{- if eq .Arch "arm64" }}CXX=zig c++ -target aarch64-macos -isysroot {{ .Env.SDK_PATH }}{{- end }}
+        {{- else if eq .Os "linux" }}
+          {{- if eq .Arch "amd64" }}CXX=zig c++ -target x86_64-linux-musl -lc{{- end }}
+          {{- if eq .Arch "arm64" }}CXX=zig c++ -target aarch64-linux-musl -lc{{- end }}
+        {{- end }}
     goos:
       - linux
       - darwin
     goarch:
       - amd64
       - arm64
+    ldflags:
+      - -s -w
+    flags:
+      - -trimpath
 
 archives:
   - formats: [tar.gz]
