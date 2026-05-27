@@ -11,7 +11,7 @@ import (
 	"github.com/niedch/vectree/internal/conf"
 	"github.com/niedch/vectree/internal/datastore"
 	"github.com/niedch/vectree/internal/mcptemplate"
-	"github.com/niedch/vectree/internal/promptloader"
+	"github.com/niedch/vectree/internal/prompt"
 	"github.com/spf13/cobra"
 )
 
@@ -169,37 +169,38 @@ the broader topic or section it belongs to.`),
 
 		// Load custom prompts from dotprompt library
 		if config.Prompts.Path != "" {
-			customPrompts, err := promptloader.LoadDir(config.Prompts.Path)
+			customPrompts, err := prompt.LoadDir(config.Prompts.Path)
 			if err != nil {
 				log.Fatal("Error loading prompts: ", err)
 			}
+
 			for _, p := range customPrompts {
-				p := p
 				desc := p.Description
 				if desc == "" {
 					desc = fmt.Sprintf("Custom prompt: %s", p.Name)
 				}
+
 				opts := []mcp.PromptOption{
 					mcp.WithPromptDescription(desc),
 				}
+
 				for _, arg := range p.Arguments {
 					argOpts := []mcp.ArgumentOption{}
 					if arg.Description != "" {
 						argOpts = append(argOpts, mcp.ArgumentDescription(arg.Description))
 					}
+
 					if arg.Required {
 						argOpts = append(argOpts, mcp.RequiredArgument())
 					}
+
 					opts = append(opts, mcp.WithArgument(arg.Name, argOpts...))
 				}
+
 				s.AddPrompt(mcp.NewPrompt(p.Name, opts...), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
-					rendered, err := promptloader.RenderPrompt(p.Source, request.Params.Arguments)
-					if err != nil {
-						return nil, fmt.Errorf("rendering prompt: %w", err)
-					}
 					return mcp.NewGetPromptResult("",
 						[]mcp.PromptMessage{
-							mcp.NewPromptMessage(mcp.RoleUser, mcp.NewTextContent(rendered)),
+							mcp.NewPromptMessage(mcp.RoleUser, mcp.NewTextContent(p.Source)),
 						},
 					), nil
 				})
