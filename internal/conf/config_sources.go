@@ -3,6 +3,7 @@ package conf
 const (
 	HTTP_SOURCE_TYPE     SourceType = "http"
 	MARKDOWN_SOURCE_TYPE SourceType = "markdown"
+	GITHUB_SOURCE_TYPE   SourceType = "github"
 )
 
 type SourceType string
@@ -19,6 +20,10 @@ type Source struct {
 	Location string     `koanf:"location"`
 	MaxDepth int        `koanf:"max_depth"`
 	Selector string     `koanf:"selector"`
+	Repo     string     `koanf:"repo"`
+	Branch   string     `koanf:"branch"`
+	Token    string     `koanf:"token"`
+	Subdir   string     `koanf:"subdir"`
 }
 
 type HttpSourceConfig struct {
@@ -52,6 +57,27 @@ func (s Source) AsMarkdown() *MarkdownSourceConfig {
 	return &MarkdownSourceConfig{
 		SourceBase: SourceBase{Name: s.Name, Type: s.Type},
 		Location:   s.Location,
+	}
+}
+
+type GithubSourceConfig struct {
+	SourceBase
+	Repo   string `validate:"required,url"`
+	Branch string
+	Token  string
+	Subdir string
+}
+
+func (s Source) AsGithub() *GithubSourceConfig {
+	if s.Type != GITHUB_SOURCE_TYPE {
+		return nil
+	}
+	return &GithubSourceConfig{
+		SourceBase: SourceBase{Name: s.Name, Type: s.Type},
+		Repo:       s.Repo,
+		Branch:     s.Branch,
+		Token:      s.Token,
+		Subdir:     s.Subdir,
 	}
 }
 

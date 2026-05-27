@@ -53,6 +53,8 @@ func (b *PipelineBuilder) BuildForSource(name string) (*Pipeline, error) {
 		return BuildHttpPipeline(src.AsHttp(), b.cfg.Pipeline), nil
 	case conf.MARKDOWN_SOURCE_TYPE:
 		return BuildMarkdownPipeline(src.AsMarkdown()), nil
+	case conf.GITHUB_SOURCE_TYPE:
+		return BuildGithubPipeline(src.AsGithub()), nil
 	default:
 		return nil, fmt.Errorf("unknown source type %q for source %q", src.Type, name)
 	}
@@ -67,6 +69,14 @@ func BuildHttpPipeline(cfg *conf.HttpSourceConfig, pipelineCfg conf.Pipeline) *P
 func BuildMarkdownPipeline(cfg *conf.MarkdownSourceConfig) *Pipeline {
 	p := NewPipeline()
 	p.AddStage(TypedStage(stages.NewDirLoader(cfg.Location)))
+	p.AddStage(TypedStage(stages.NewFileLoader(cfg.Name)))
+	return p
+}
+
+func BuildGithubPipeline(cfg *conf.GithubSourceConfig) *Pipeline {
+	p := NewPipeline()
+	p.AddStage(TypedStage(stages.NewGitHubCloner(cfg.Name, cfg.Repo, cfg.Branch, cfg.Token, cfg.Subdir)))
+	p.AddStage(TypedStage(stages.NewDirLoader("")))
 	p.AddStage(TypedStage(stages.NewFileLoader(cfg.Name)))
 	return p
 }
