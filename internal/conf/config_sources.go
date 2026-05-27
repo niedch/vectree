@@ -80,5 +80,3 @@ func (s Source) AsGithub() *GithubSourceConfig {
 		Subdir:     s.Subdir,
 	}
 }
-
-
