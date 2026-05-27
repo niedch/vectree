@@ -12,10 +12,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: GCC multilib
-      run: |
-        sudo apt-get install gcc-multilib g++-multilib
-
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
