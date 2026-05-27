@@ -11,6 +11,13 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
+    - name: Check PR title
+      if: github.event_name == 'pull_request'
+      uses: thehanimo/pr-title-checker@v1.4.3
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        configuration_path: .github/pr-title-checker-config.json
+
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
