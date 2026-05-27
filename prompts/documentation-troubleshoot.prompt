@@ -1,0 +1,10 @@
+---
+name: documentation-troubleshoot
+description: Troubleshoot issues by searching documentation for solutions
+input:
+  schema:
+    issue: string
+---
+I'm experiencing an issue: {{issue}}
+
+Please search the documentation for troubleshooting information, common solutions, and relevant configuration details.

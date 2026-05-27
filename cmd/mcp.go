@@ -1,16 +1,14 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"log"
 
-	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/niedch/vectree/internal/ai"
 	"github.com/niedch/vectree/internal/conf"
 	"github.com/niedch/vectree/internal/datastore"
-	"github.com/niedch/vectree/internal/mcptemplate"
+	"github.com/niedch/vectree/internal/mcpserver"
 	"github.com/spf13/cobra"
 )
 
@@ -36,17 +34,10 @@ Tools:
       - Returns the parent section/heading that contains the document
 
 Prompts:
-   1. documentation-help
-      - Guides LLM to search for help on specific topics
-      - Example topics: features, configuration, API
-
-   2. documentation-troubleshoot
-      - Helps troubleshoot issues by searching documentation
-      - Searches for error messages, solutions, and workarounds
-
-   3. documentation-develop
-      - Finds developer documentation and API guides
-      - Useful for building integrations and custom implementations
+   - Prompts are loaded from the configured dotprompt library directory
+   - Each .prompt file in the library becomes a prompt with its defined
+     arguments and description
+   - Documentation prompts guide LLM usage of the search tools
 
 The server communicates via stdio and can be integrated with MCP-compatible 
 clients like Claude Desktop, Zed, or other AI assistants.
@@ -60,13 +51,6 @@ Configuration:
 Example:
   vectree mcp`,
 	Run: func(cmd *cobra.Command, args []string) {
-		s := server.NewMCPServer(
-			"Documentation RAG",
-			"1.0.0",
-			server.WithToolCapabilities(false),
-			server.WithRecovery(),
-		)
-
 		config, err := conf.Load()
 		if err != nil {
 			log.Fatal("Error loading config: ", err)
@@ -78,172 +62,17 @@ Example:
 		}
 		ds := datastore.NewSqliteDatastore(db)
 
-		model, err := ai.NewGeminiEmbedder(context.Background(), config.AI.AsGeminiProviderConfig())
+		model, err := ai.NewGeminiEmbedder(cmd.Context(), config.AI.AsGeminiProviderConfig())
 		if err != nil {
 			log.Fatal("Error initializing embedding model: ", err)
 		}
 
-		// Add documentation search tool
-		researchTool := mcp.NewTool("search-documentation",
-			mcp.WithDescription(`Search ingested documentation including user guides and developer documentation. 
-Use this tool to find information about features, configuration, API usage, troubleshooting, and development guidelines. 
-Performs semantic search to find the most relevant documentation sections.`),
-			mcp.WithString("search-string",
-				mcp.Required(),
-				mcp.Description(`A natural language query describing what you want to know. 
-Examples: 'How to configure authentication', 
-					'API endpoints for integration', 
-					'troubleshooting connection errors', 
-					'developer setup guide'`),
-			),
-		)
-
-		s.AddTool(researchTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			searchString, err := request.RequireString("search-string")
-			if err != nil {
-				return mcp.NewToolResultError(err.Error()), nil
-			}
-
-			emb, err := model.GenerateEmbedding(ctx, searchString)
-			if err != nil {
-				return mcp.NewToolResultError(err.Error()), nil
-			}
-
-			docs, err := ds.SearchSimilarEmbeddings(ctx, emb, config.Retrieval.SimilarityResults)
-			if err != nil {
-				return mcp.NewToolResultError(err.Error()), nil
-			}
-
-			resultString := mcptemplate.BuildResponseString(docs)
-
-			return mcp.NewToolResultText(resultString), nil
+		s := mcpserver.New(mcpserver.Dependencies{
+			Config:   config,
+			Querier:  ds,
+			Embedder: model,
 		})
 
-		// Add tool to get parent context for a document
-		contextTool := mcp.NewTool("get-parent-context",
-			mcp.WithDescription(`Get the parent context for a specific document. When you find a relevant document 
-in search results, you can use this tool to get its parent document for broader context. 
-For example, if you find a document at level 3, you can request its parent at level 2 to understand 
-the broader topic or section it belongs to.`),
-			mcp.WithNumber("document-id",
-				mcp.Required(),
-				mcp.Description("The ID of the document whose parent context you want to retrieve"),
-			),
-		)
-
-		s.AddTool(contextTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			documentId, err := request.RequireInt("document-id")
-			if err != nil {
-				return mcp.NewToolResultError(err.Error()), nil
-			}
-
-			// First, get the requested document to check if it's a root document
-			doc, err := ds.GetDocument(ctx, documentId)
-			if err != nil {
-				return mcp.NewToolResultError(fmt.Sprintf("Document not found: %v", err)), nil
-			}
-
-			// Check if this document is a root document (no parent)
-			if doc.ParentId == nil {
-				return mcp.NewToolResultText(fmt.Sprintf(
-					"Document %d is a root document (Level %d heading) and has no parent context.\n\n"+
-						"**Document Content:**\n\n%s",
-					doc.Id, doc.Level, doc.Document)), nil
-			}
-
-			// Get the parent document
-			parentDoc, err := ds.GetParentDocument(ctx, documentId)
-			if err != nil {
-				return mcp.NewToolResultError(fmt.Sprintf("Could not find parent document: %v", err)), nil
-			}
-
-			// Wrap the parent document in a DocumentWithEmbedding slice for template consistency
-			// Note: We don't need the embedding for display, so we can leave it empty
-			parentDocs := []datastore.DocumentWithEmbedding{
-				{
-					Document:       *parentDoc,
-					Embedding:      nil,
-					EmbeddingRowid: 0,
-				},
-			}
-
-			// Use the same template as search results for consistency
-			resultString := mcptemplate.BuildResponseString(parentDocs)
-
-			return mcp.NewToolResultText(resultString), nil
-		})
-
-		// Add prompts to guide LLM usage
-		s.AddPrompt(mcp.NewPrompt("documentation-help",
-			mcp.WithPromptDescription("Get help with documentation topics, features, or configuration"),
-			mcp.WithArgument("topic",
-				mcp.ArgumentDescription("The specific topic or area you need help with (e.g., authentication, integrations, API)"),
-				mcp.RequiredArgument(),
-			),
-		), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
-			topic := request.Params.Arguments["topic"]
-
-			message := fmt.Sprintf(`I need help with the documentation. Please search for information about: %s
-
-Use the search-documentation tool to find relevant information from the documentation.`, topic)
-
-			return mcp.NewGetPromptResult("",
-				[]mcp.PromptMessage{
-					mcp.NewPromptMessage(
-						mcp.RoleUser,
-						mcp.NewTextContent(message),
-					),
-				},
-			), nil
-		})
-
-		s.AddPrompt(mcp.NewPrompt("documentation-troubleshoot",
-			mcp.WithPromptDescription("Troubleshoot issues by searching documentation for solutions"),
-			mcp.WithArgument("issue",
-				mcp.ArgumentDescription("Description of the issue or error you're experiencing"),
-				mcp.RequiredArgument(),
-			),
-		), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
-			issue := request.Params.Arguments["issue"]
-
-			message := fmt.Sprintf(`I'm experiencing an issue: %s
-
-Please search the documentation for troubleshooting information, common solutions, and relevant configuration details.`, issue)
-
-			return mcp.NewGetPromptResult("",
-				[]mcp.PromptMessage{
-					mcp.NewPromptMessage(
-						mcp.RoleUser,
-						mcp.NewTextContent(message),
-					),
-				},
-			), nil
-		})
-
-		s.AddPrompt(mcp.NewPrompt("documentation-develop",
-			mcp.WithPromptDescription("Find developer documentation and API guides"),
-			mcp.WithArgument("dev-topic",
-				mcp.ArgumentDescription("What you want to develop or integrate (e.g., custom adapter, API integration, plugin)"),
-				mcp.RequiredArgument(),
-			),
-		), func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
-			devTopic := request.Params.Arguments["dev-topic"]
-
-			message := fmt.Sprintf(`I need developer documentation and API information about: %s
-
-Please search the documentation for relevant information and best practices.`, devTopic)
-
-			return mcp.NewGetPromptResult("",
-				[]mcp.PromptMessage{
-					mcp.NewPromptMessage(
-						mcp.RoleUser,
-						mcp.NewTextContent(message),
-					),
-				},
-			), nil
-		})
-
-		// Start the server
 		if err := server.ServeStdio(s); err != nil {
 			fmt.Printf("Server error: %v\n", err)
 		}

@@ -30,3 +30,6 @@ embedding_model = "gemini-embedding-001"
 
 [retrieval]
 similarity_results = 3
+
+[prompts]
+path = "./prompts"
