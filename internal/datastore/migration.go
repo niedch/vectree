@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"embed"
-	"fmt"
 	"io/fs"
 
 	"github.com/niedch/vectree/internal/conf"
@@ -39,19 +38,13 @@ func RunMigrations(db *sql.DB, cfg *conf.Config) error {
 	return nil
 }
 
-func newVectorTableMigration(cfg *conf.Config) *goose.Migration {
-	vertexSize := cfg.AI.VertexSize
-	if vertexSize == 0 {
-		vertexSize = conf.DEFAULT_VERTEX_SIZE
-	}
-
+func newVectorTableMigration(_ *conf.Config) *goose.Migration {
 	up := &goose.GoFunc{
 		RunTx: func(ctx context.Context, tx *sql.Tx) error {
-			query := fmt.Sprintf(
-				"CREATE VIRTUAL TABLE IF NOT EXISTS embedding USING vec0(embedding FLOAT[%d])",
-				vertexSize,
-			)
-			_, err := tx.ExecContext(ctx, query)
+			_, err := tx.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS embedding (
+				rowid INTEGER PRIMARY KEY,
+				embedding BLOB NOT NULL
+			)`)
 			return err
 		},
 	}

@@ -13,10 +13,14 @@ before:
 
 builds:
   - env:
-      - CGO_ENABLED=1
+      - CGO_ENABLED=0
     goos:
       - linux
       - darwin
+    ldflags:
+      - -s -w
+    flags:
+      - -trimpath
 
 archives:
   - formats: [tar.gz]

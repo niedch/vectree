@@ -4,6 +4,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -12,8 +15,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Set up Go
-      uses: actions/setup-go@v6
+    - uses: actions/setup-go@v6
       with:
         go-version-file: go.mod
 
@@ -27,7 +29,7 @@ jobs:
       if: success() && startsWith(github.ref, 'refs/tags/')
       with:
         version: latest
-        args: release
+        args: release --draft
       env:
         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
