@@ -68,8 +68,8 @@ Example:
 		ds := datastore.NewSqliteDatastore(db)
 		store := store.NewSqliteStore(ds)
 
-		pipelineBuilder := pipeline.NewPipelineBuilder(config);
-		sourcePipelines, err :=  pipelineBuilder.BuildSources();
+		pipelineBuilder := pipeline.NewPipelineBuilder(config)
+		sourcePipelines, err := pipelineBuilder.BuildSources()
 		if err != nil {
 			log.Fatalf("Failed to build SourcePipelines: %e", err)
 		}

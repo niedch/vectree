@@ -72,6 +72,8 @@ func validateSources(sources map[string]Source) error {
 			errs = append(errs, validateTyped(fmt.Sprintf("source %q", name), src.AsHttp())...)
 		case MARKDOWN_SOURCE_TYPE:
 			errs = append(errs, validateTyped(fmt.Sprintf("source %q", name), src.AsMarkdown())...)
+		case GITHUB_SOURCE_TYPE:
+			errs = append(errs, validateTyped(fmt.Sprintf("source %q", name), src.AsGithub())...)
 		default:
 			errs = append(errs, fmt.Sprintf("source %q: type %q is invalid", name, src.Type))
 		}
