@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os/exec"
+	"runtime"
 
 	"github.com/niedch/vectree/internal/ai"
 	"github.com/niedch/vectree/internal/conf"
@@ -55,7 +57,9 @@ Example:
 		server := visualize.NewServer(ds, model, visualizeLimit)
 		addr := fmt.Sprintf(":%d", visualizePort)
 
-		fmt.Printf("Visualization server starting on http://localhost%s\n", addr)
+		url := fmt.Sprintf("http://localhost%s", addr)
+		fmt.Printf("Visualization server starting on %s\n", url)
+		go openBrowser(url)
 		if err := server.Start(addr); err != nil {
 			log.Fatal("Server failed: ", err)
 		}
@@ -68,3 +72,18 @@ func init() {
 	visualizeCmd.Flags().IntVarP(&visualizePort, "port", "p", 8090, "Port to run the visualization server on")
 	visualizeCmd.Flags().IntVarP(&visualizeLimit, "limit", "l", 1000, "Maximum number of embeddings to visualize")
 }
+
+
+func openBrowser(url string) {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "darwin":
+		cmd = exec.Command("open", url)
+	case "windows":
+		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
+	default:
+		cmd = exec.Command("xdg-open", url)
+	}
+	cmd.Start()
+}
+
