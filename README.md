@@ -12,6 +12,23 @@ Share your image. Anyone can pull it and query your docs with natural language.
 
 ---
 
+## Embedding Visualizer
+
+An interactive 3D visualization of your ingested embeddings using PCA dimensionality reduction. Type a natural language prompt to project it into the embedding space and see the nearest matching documents.
+
+![3D Embedding Visualization](assets/visualizer.png)
+
+```bash
+vectree visualize --port 8090 --limit 1000
+```
+
+| Flag | Default | Description |
+|---|---|---|
+| `--port` / `-p` | `8090` | Port for the web server |
+| `--limit` / `-l` | `1000` | Maximum number of embeddings to visualize |
+
+---
+
 ## Sources
 
 Sources define what knowledge goes into your container. Every source is a named config block.
@@ -50,6 +67,26 @@ Load local `.md` files from a directory — perfect for Obsidian vaults or local
 type = "markdown"
 location = "/vault/personal/"
 ```
+
+---
+
+## MCP Server
+
+Once running, the server exposes these tools:
+
+| Tool | Description |
+|---|---|
+| `search-documentation` | Semantic search across your knowledge base. Provide a `search-string` and get the most relevant chunks. |
+| `get-parent-context` | Get the parent section of a document chunk for broader context. Pass a `document-id`. |
+
+### Built-in Prompts
+
+Prompts in the configured `[prompts]` directory are registered as MCP prompts. The default set includes:
+
+| Prompt | Description |
+|---|---|
+| `documentation-help` | Ask about docs, features, or configuration |
+| `documentation-develop` | Find developer docs and API guides |
 
 ---
 
@@ -147,43 +184,6 @@ docker run -i --init my-knowledge-base
 ```
 
 4. Connect any MCP client (Claude Desktop, Zed, etc.) to the stdio server.
-
----
-
-## MCP Server
-
-Once running, the server exposes these tools:
-
-| Tool | Description |
-|---|---|
-| `search-documentation` | Semantic search across your knowledge base. Provide a `search-string` and get the most relevant chunks. |
-| `get-parent-context` | Get the parent section of a document chunk for broader context. Pass a `document-id`. |
-
-### Built-in Prompts
-
-Prompts in the configured `[prompts]` directory are registered as MCP prompts. The default set includes:
-
-| Prompt | Description |
-|---|---|
-| `documentation-help` | Ask about docs, features, or configuration |
-| `documentation-develop` | Find developer docs and API guides |
-
----
-
-## Embedding Visualizer
-
-An interactive 3D visualization of your ingested embeddings using PCA dimensionality reduction. Type a natural language prompt to project it into the embedding space and see the nearest matching documents.
-
-![3D Embedding Visualization](assets/visualizer.png)
-
-```bash
-vectree visualize --port 8090 --limit 1000
-```
-
-| Flag | Default | Description |
-|---|---|---|
-| `--port` / `-p` | `8090` | Port for the web server |
-| `--limit` / `-l` | `1000` | Maximum number of embeddings to visualize |
 
 ---
 
