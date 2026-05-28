@@ -37,6 +37,66 @@ func (_m *MockQuerier) EXPECT() *MockQuerier_Expecter {
 	return &MockQuerier_Expecter{mock: &_m.Mock}
 }
 
+// CountDocumentEmbeddings provides a mock function for the type MockQuerier
+func (_mock *MockQuerier) CountDocumentEmbeddings(ctx context.Context) (int, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountDocumentEmbeddings")
+	}
+
+	var r0 int
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (int, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) int); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockQuerier_CountDocumentEmbeddings_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountDocumentEmbeddings'
+type MockQuerier_CountDocumentEmbeddings_Call struct {
+	*mock.Call
+}
+
+// CountDocumentEmbeddings is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockQuerier_Expecter) CountDocumentEmbeddings(ctx interface{}) *MockQuerier_CountDocumentEmbeddings_Call {
+	return &MockQuerier_CountDocumentEmbeddings_Call{Call: _e.mock.On("CountDocumentEmbeddings", ctx)}
+}
+
+func (_c *MockQuerier_CountDocumentEmbeddings_Call) Run(run func(ctx context.Context)) *MockQuerier_CountDocumentEmbeddings_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockQuerier_CountDocumentEmbeddings_Call) Return(n int, err error) *MockQuerier_CountDocumentEmbeddings_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockQuerier_CountDocumentEmbeddings_Call) RunAndReturn(run func(ctx context.Context) (int, error)) *MockQuerier_CountDocumentEmbeddings_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteDocument provides a mock function for the type MockQuerier
 func (_mock *MockQuerier) DeleteDocument(ctx context.Context, id int) error {
 	ret := _mock.Called(ctx, id)
@@ -158,6 +218,80 @@ func (_c *MockQuerier_GetDocument_Call) Return(document *Document, err error) *M
 }
 
 func (_c *MockQuerier_GetDocument_Call) RunAndReturn(run func(ctx context.Context, id int) (*Document, error)) *MockQuerier_GetDocument_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetDocumentEmbeddingsPage provides a mock function for the type MockQuerier
+func (_mock *MockQuerier) GetDocumentEmbeddingsPage(ctx context.Context, limit int, offset int) ([]DocumentWithEmbedding, error) {
+	ret := _mock.Called(ctx, limit, offset)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetDocumentEmbeddingsPage")
+	}
+
+	var r0 []DocumentWithEmbedding
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int) ([]DocumentWithEmbedding, error)); ok {
+		return returnFunc(ctx, limit, offset)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int) []DocumentWithEmbedding); ok {
+		r0 = returnFunc(ctx, limit, offset)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]DocumentWithEmbedding)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int, int) error); ok {
+		r1 = returnFunc(ctx, limit, offset)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockQuerier_GetDocumentEmbeddingsPage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetDocumentEmbeddingsPage'
+type MockQuerier_GetDocumentEmbeddingsPage_Call struct {
+	*mock.Call
+}
+
+// GetDocumentEmbeddingsPage is a helper method to define mock.On call
+//   - ctx context.Context
+//   - limit int
+//   - offset int
+func (_e *MockQuerier_Expecter) GetDocumentEmbeddingsPage(ctx interface{}, limit interface{}, offset interface{}) *MockQuerier_GetDocumentEmbeddingsPage_Call {
+	return &MockQuerier_GetDocumentEmbeddingsPage_Call{Call: _e.mock.On("GetDocumentEmbeddingsPage", ctx, limit, offset)}
+}
+
+func (_c *MockQuerier_GetDocumentEmbeddingsPage_Call) Run(run func(ctx context.Context, limit int, offset int)) *MockQuerier_GetDocumentEmbeddingsPage_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int
+		if args[1] != nil {
+			arg1 = args[1].(int)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockQuerier_GetDocumentEmbeddingsPage_Call) Return(documentWithEmbeddings []DocumentWithEmbedding, err error) *MockQuerier_GetDocumentEmbeddingsPage_Call {
+	_c.Call.Return(documentWithEmbeddings, err)
+	return _c
+}
+
+func (_c *MockQuerier_GetDocumentEmbeddingsPage_Call) RunAndReturn(run func(ctx context.Context, limit int, offset int) ([]DocumentWithEmbedding, error)) *MockQuerier_GetDocumentEmbeddingsPage_Call {
 	_c.Call.Return(run)
 	return _c
 }
