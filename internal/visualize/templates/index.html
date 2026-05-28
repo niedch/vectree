@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Embedding Viewer</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; }
+    </style>
+</head>
+<body>
+    <loading-indicator>Loading Embeddings and Calculating PCA...</loading-indicator>
+    <search-panel></search-panel>
+    <doc-overlay></doc-overlay>
+    <embedding-plot></embedding-plot>
+
+    <script src="./components/loading-indicator.js"></script>
+    <script src="./components/doc-overlay.js"></script>
+    <script src="./components/search-panel.js"></script>
+    <script src="./components/embedding-plot.js"></script>
+
+    <script>
+        const plot = document.querySelector('embedding-plot');
+        const search = document.querySelector('search-panel');
+        const docOverlay = document.querySelector('doc-overlay');
+        const loading = document.querySelector('loading-indicator');
+
+        async function fetchFullDocument(id) {
+            try {
+                const response = await fetch(`/api/document/${id}`);
+                if (!response.ok) throw new Error('Failed to fetch document');
+                const doc = await response.json();
+                const html = marked.parse(doc.content);
+                docOverlay.show(doc.id, html, doc.parent_id);
+            } catch (err) {
+                alert('Error loading document: ' + err.message);
+            }
+        }
+
+        async function loadData() {
+            try {
+                const response = await fetch('/api/embeddings');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+
+                if (data.length === 0) {
+                    loading.show('No embeddings found in the database.');
+                    return;
+                }
+
+                const x = data.map(d => d.x);
+                const y = data.map(d => d.y);
+                const z = data.map(d => d.z);
+                const text = data.map(d => d.text);
+                const ids = data.map(d => d.id);
+
+                plot.setMainTrace(x, y, z, text, ids);
+                loading.hide();
+                search.classList.add('visible');
+            } catch (error) {
+                loading.show('Error loading data: ' + error.message);
+            }
+        }
+
+        async function projectPrompt(prompt) {
+            search.setLoading(true);
+            try {
+                const response = await fetch('/api/project-prompt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(errText || `HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                plot.updatePromptTrace(data);
+                plot.focusCamera(data.x, data.y, data.z);
+                search.setResults(data.nearest_documents);
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                search.setLoading(false);
+            }
+        }
+
+        search.addEventListener('search-panel-project', (e) => projectPrompt(e.detail.prompt));
+        search.addEventListener('search-panel-doc-select', (e) => fetchFullDocument(e.detail.id));
+        plot.addEventListener('plot-point-click', (e) => fetchFullDocument(e.detail.id));
+        docOverlay.addEventListener('doc-overlay-close', () => docOverlay.hide());
+        docOverlay.addEventListener('doc-overlay-navigate-parent', (e) => fetchFullDocument(e.detail.id));
+
+        loadData();
+    </script>
+</body>
+</html>

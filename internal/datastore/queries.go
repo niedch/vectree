@@ -16,6 +16,8 @@ type Querier interface {
 	GetEmbeddingsForDocument(ctx context.Context, documentId int) ([]Embedding, error)
 	DeleteDocument(ctx context.Context, id int) error
 	SearchSimilarEmbeddings(ctx context.Context, queryVector []float32, limit int) ([]DocumentWithEmbedding, error)
+	GetDocumentEmbeddingsPage(ctx context.Context, limit, offset int) ([]DocumentWithEmbedding, error)
+	CountDocumentEmbeddings(ctx context.Context) (int, error)
 }
 
 type SqliteDatastore struct {
@@ -293,4 +295,70 @@ func (ds *SqliteDatastore) SearchSimilarEmbeddings(ctx context.Context, queryVec
 	}
 
 	return results, nil
+}
+
+// GetDocumentEmbeddingsPage retrieves a page of documents with their embeddings
+func (ds *SqliteDatastore) GetDocumentEmbeddingsPage(ctx context.Context, limit, offset int) ([]DocumentWithEmbedding, error) {
+	query := `
+		SELECT d.id, d.document, d.level, d.parent_id, e.embedding, de.embedding_rowid
+		FROM document d
+		JOIN document_embedding de ON d.id = de.document_id
+		JOIN embedding e ON e.rowid = de.embedding_rowid
+		ORDER BY d.id
+		LIMIT ? OFFSET ?
+	`
+
+	rows, err := ds.db.QueryContext(ctx, query, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query document embeddings page: %w", err)
+	}
+	defer rows.Close()
+
+	var results []DocumentWithEmbedding
+	for rows.Next() {
+		var id int
+		var document string
+		var level int
+		var parentId *int
+		var embeddingBytes []byte
+		var embeddingRowid int64
+
+		if err := rows.Scan(&id, &document, &level, &parentId, &embeddingBytes, &embeddingRowid); err != nil {
+			return nil, fmt.Errorf("failed to scan result row: %w", err)
+		}
+
+		embedding, err := deserializeFloat32(embeddingBytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to deserialize embedding: %w", err)
+		}
+
+		results = append(results, DocumentWithEmbedding{
+			Document: Document{
+				Id:       id,
+				Document: document,
+				Level:    level,
+				ParentId: parentId,
+			},
+			Embedding:      embedding,
+			EmbeddingRowid: embeddingRowid,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating result rows: %w", err)
+	}
+
+	return results, nil
+}
+
+// CountDocumentEmbeddings returns the total number of documents with embeddings
+func (ds *SqliteDatastore) CountDocumentEmbeddings(ctx context.Context) (int, error) {
+	var count int
+	err := ds.db.GetContext(ctx, &count,
+		`SELECT COUNT(*) FROM document d
+		 JOIN document_embedding de ON d.id = de.document_id`)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count document embeddings: %w", err)
+	}
+	return count, nil
 }
