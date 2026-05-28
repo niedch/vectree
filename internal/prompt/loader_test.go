@@ -126,6 +126,30 @@ func TestLoadFromSource_NoFrontmatter(t *testing.T) {
 	assert.Equal(t, "just plain text", p.Source)
 }
 
+func TestLoadFromSource_InlineSchemaWithCommaDescription(t *testing.T) {
+	dp := dotprompt.NewDotprompt(nil)
+
+	source := `---
+name: research-topic
+description: Search documentation for a topic
+input:
+  schema:
+    dev-topic: string,The technical topic, API, or feature to research
+---
+Search for {{dev-topic}}`
+
+	p, err := LoadFromSource(dp, source, "fallback")
+	require.NoError(t, err)
+
+	assert.Equal(t, "research-topic", p.Name)
+	assert.Equal(t, "Search documentation for a topic", p.Description)
+	assert.Len(t, p.Arguments, 1)
+
+	assert.Equal(t, "dev-topic", p.Arguments[0].Name)
+	assert.True(t, p.Arguments[0].Required)
+	assert.Equal(t, "The technical topic, API, or feature to research", p.Arguments[0].Description)
+}
+
 func TestLoadFromSource_NameFromFrontmatterOverrides(t *testing.T) {
 	dp := dotprompt.NewDotprompt(nil)
 

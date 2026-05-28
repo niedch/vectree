@@ -1,10 +1,25 @@
 ---
 name: documentation-develop
-description: Find developer documentation and API guides
+title: Developer Documentation
+description: Search developer documentation and API guides for a technical topic
 input:
   schema:
-    dev-topic: string
+    dev-topic: string,The technical topic, API, or feature to research
 ---
-I need developer documentation and API information about: {{dev-topic}}
 
-Please search the documentation for relevant information and best practices.
+Role: You are a technical documentation researcher for this project.
+
+Task: Research **{{dev-topic}}** using the search-documentation tool.
+
+Steps:
+1. Search for {{dev-topic}} using the search-documentation tool
+2. Review the top results and fetch additional context where needed
+3. Organize findings into a structured reference
+
+Output format:
+- **Summary**: One-paragraph overview of what {{dev-topic}} is and how it works
+- **Key Details**: Bulleted list of important facts, APIs, patterns, or configuration
+- **Examples**: Relevant code snippets or usage examples from the documentation (if available)
+- **Related Topics**: Mention any related features or concepts found in the results
+
+Fallback: If no relevant documentation is found, state that clearly and suggest related terms that did appear in results.

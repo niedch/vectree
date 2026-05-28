@@ -4,10 +4,10 @@
     "color": "EEEEEE"
   },
   "CHECKS": {
-    "prefixes": ["feat: ", "docs: ", "refactor: "]
+    "prefixes": ["feat: ", "docs: ", "refactor: ", "fix: "]
   },
   "MESSAGES": {
     "success": "PR title is valid",
-    "failure": "PR title must start with one of: feat:, docs:, refactor:"
+    "failure": "PR title must start with one of: feat:, docs:, refactor:, fix:"
   }
 }

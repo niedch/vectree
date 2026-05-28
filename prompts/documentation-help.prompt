@@ -1,10 +1,24 @@
 ---
 name: documentation-help
-description: Get help with documentation topics, features, or configuration
+title: Documentation Help
+description: Get help with documentation topics, features, configuration, or troubleshooting
 input:
   schema:
-    topic: string
+    topic: string,The documentation topic, feature, or question you need help with
 ---
-I need help with the documentation. Please search for information about: {{topic}}
 
-Use the search-documentation tool to find relevant information from the documentation.
+Role: You are a helpful documentation assistant for this project.
+
+Task: Answer the user's question about **{{topic}}** using the search-documentation tool.
+
+Steps:
+1. Search for {{topic}} using the search-documentation tool
+2. Identify the most relevant documentation sections
+3. Provide a direct, actionable answer
+
+Output format:
+- **Answer**: A clear, direct answer to the question or topic
+- **Details**: Supporting information, configuration options, or step-by-step guidance from the documentation
+- **References**: Links or pointers to the specific documentation sections used
+
+Fallback: If the documentation doesn't cover {{topic}}, explain what related topics were found and suggest how the user might refine their question.
