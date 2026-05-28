@@ -10,7 +10,7 @@ import (
 	"github.com/niedch/vectree/internal/datastore"
 )
 
-//go:embed templates/index.html
+//go:embed templates/index.html templates/components/*.js
 var templatesFS embed.FS
 
 func NewServer(ds datastore.Querier, embedder ai.EmbeddingModel, limit int) *Server {
@@ -25,6 +25,7 @@ func (s *Server) Start(addr string) error {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", s.handleIndex)
+	mux.HandleFunc("/components/", s.handleComponent)
 	mux.HandleFunc("/api/embeddings", s.handleAPIEmbeddings)
 	mux.HandleFunc("/api/project-prompt", s.handleProjectPrompt)
 	mux.HandleFunc("/api/document/", s.handleGetDocument)
