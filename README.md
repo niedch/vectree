@@ -167,7 +167,23 @@ Prompts in the configured `[prompts]` directory are registered as MCP prompts. T
 |---|---|
 | `documentation-help` | Ask about docs, features, or configuration |
 | `documentation-develop` | Find developer docs and API guides |
-| `documentation-troubleshoot` | Troubleshoot by searching the knowledge base |
+
+---
+
+## Embedding Visualizer
+
+An interactive 3D visualization of your ingested embeddings using PCA dimensionality reduction. Type a natural language prompt to project it into the embedding space and see the nearest matching documents.
+
+![3D Embedding Visualization](assets/visualizer.png)
+
+```bash
+vectree visualize --port 8090 --limit 1000
+```
+
+| Flag | Default | Description |
+|---|---|---|
+| `--port` / `-p` | `8090` | Port for the web server |
+| `--limit` / `-l` | `1000` | Maximum number of embeddings to visualize |
 
 ---
 
@@ -179,4 +195,5 @@ Prompts in the configured `[prompts]` directory are registered as MCP prompts. T
 |---|---|
 | `vectree ingest` | Ingest all sources, generate embeddings, store in SQLite |
 | `vectree ingestDebug` | Ingest and dump chunks as `output/output_N.md` without embedding |
+| `vectree visualize` | Start the 3D embedding visualization web server |
 | `vectree mcp` | Start the MCP server over stdio |

@@ -12,7 +12,7 @@ var rootCmd = &cobra.Command{
 	Long: `vectree is a command-line tool for building and serving a RAG (Retrieval-Augmented Generation) 
 system from configurable documentation sources.
 
-This tool provides three main commands:
+This tool provides four main commands:
 
 1. ingest - Document Ingestion Pipeline
    - Crawls web documentation from sources defined in config.toml
@@ -22,14 +22,20 @@ This tool provides three main commands:
    - Stores embeddings in SQLite database with vec0 extension
    - Maintains hierarchical document relationships (parent-child)
 
-2. mcp - Model Context Protocol Server
+2. visualize - 3D Embedding Visualizer
+   - Interactive 3D scatter plot of ingested document embeddings
+   - PCA dimensionality reduction for visualization
+   - Project natural language prompts into the embedding space
+   - Click points to view full document content with parent navigation
+
+3. mcp - Model Context Protocol Server
    - Exposes documentation search via the Model Context Protocol (MCP)
    - Provides 'search-documentation' tool for semantic search
    - Provides 'get-parent-context' tool for retrieving parent sections
    - Includes helpful prompts for common documentation tasks
    - Communicates via stdio for integration with AI assistants
 
-3. ingestDebug - Development/Debug Command
+4. ingestDebug - Development/Debug Command
    - Tests the document loading pipeline in isolation
    - Useful for debugging file loading and processing issues
    - Does not perform embedding generation or storage
