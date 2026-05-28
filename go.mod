@@ -115,6 +115,7 @@ require (
 	golang.org/x/text v0.37.0 // indirect
 	golang.org/x/tools v0.44.0 // indirect
 	golang.org/x/tools/cmd/cover v0.1.0-deprecated // indirect
+	gonum.org/v1/gonum v0.17.0 // indirect
 	google.golang.org/api v0.281.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/grpc v1.81.1 // indirect
