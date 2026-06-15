@@ -5,6 +5,7 @@ type Document struct {
 	Document string `db:"document"`
 	Level    int    `db:"level"`
 	ParentId *int   `db:"parent_id"` // Nullable parent reference
+	Source   string `db:"source"`
 }
 
 type Embedding struct {

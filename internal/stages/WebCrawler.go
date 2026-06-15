@@ -48,11 +48,12 @@ func NewWebCrawler(sourceName, url string, maxDepth int, selector string, concur
 
 type crawlPageResult struct {
 	content string
+	url     string
 	links   []string
 }
 
-func (w *WebCrawler) Run(ctx context.Context, _ <-chan any) <-chan string {
-	out := make(chan string)
+func (w *WebCrawler) Run(ctx context.Context, _ <-chan any) <-chan Document {
+	out := make(chan Document)
 
 	go func() {
 		defer close(out)
@@ -98,7 +99,7 @@ func (w *WebCrawler) Run(ctx context.Context, _ <-chan any) <-chan string {
 			for res := range results {
 				if res.content != "" {
 					select {
-					case out <- res.content:
+					case out <- Document{Content: res.content, Source: res.url}:
 					case <-ctx.Done():
 						return
 					}
@@ -142,7 +143,7 @@ func (w *WebCrawler) crawlPage(ctx context.Context, pageURL string) (crawlPageRe
 
 	links := w.extractLinks(doc, pageURL)
 
-	return crawlPageResult{content: content, links: links}, nil
+	return crawlPageResult{content: content, url: pageURL, links: links}, nil
 }
 
 func (w *WebCrawler) fetchPage(ctx context.Context, pageURL string) (*goquery.Document, error) {

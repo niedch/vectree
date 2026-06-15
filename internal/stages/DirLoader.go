@@ -8,39 +8,51 @@ import (
 )
 
 type DirLoader struct {
-	dirPath string
+	dirPath      string
+	sourcePrefix string
 }
 
 func NewDirLoader(dirPath string) *DirLoader {
-	return &DirLoader{
-		dirPath: dirPath,
-	}
+	return &DirLoader{dirPath: dirPath}
 }
 
-func (l DirLoader) Run(ctx context.Context, in <-chan any) <-chan string {
-	out := make(chan string)
+func NewDirLoaderWithSource(dirPath, sourcePrefix string) *DirLoader {
+	return &DirLoader{dirPath: dirPath, sourcePrefix: sourcePrefix}
+}
+
+func (l DirLoader) Run(ctx context.Context, in <-chan any) <-chan FileRef {
+	out := make(chan FileRef)
+
+	walk := func(root string) {
+		filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			if !info.IsDir() && strings.HasSuffix(info.Name(), ".md") {
+				source := path
+				if l.sourcePrefix != "" {
+					rel, err := filepath.Rel(root, path)
+					if err == nil {
+						source = l.sourcePrefix + rel
+					}
+				} else {
+					source = "file://" + path
+				}
+				select {
+				case out <- FileRef{Path: path, Source: source}:
+				case <-ctx.Done():
+					return ctx.Err()
+				}
+			}
+			return nil
+		})
+	}
 
 	go func() {
 		defer close(out)
-
-		walk := func(dir string) {
-			filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
-				if err != nil {
-					return err
-				}
-				if ctx.Err() != nil {
-					return ctx.Err()
-				}
-				if !info.IsDir() && strings.HasSuffix(info.Name(), ".md") {
-					select {
-					case out <- path:
-					case <-ctx.Done():
-						return ctx.Err()
-					}
-				}
-				return nil
-			})
-		}
 
 		if l.dirPath != "" {
 			walk(l.dirPath)

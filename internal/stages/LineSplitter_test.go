@@ -9,8 +9,8 @@ import (
 
 func TestLineSplitter_Run(t *testing.T) {
 	splitter := NewLineSplitter()
-	in := make(chan string, 1)
-	in <- "hello\nworld"
+	in := make(chan Document, 1)
+	in <- Document{Content: "hello\nworld", Source: "file://test.md"}
 	close(in)
 
 	out := splitter.Run(context.Background(), in)
@@ -26,8 +26,8 @@ func TestLineSplitter_Run(t *testing.T) {
 
 func TestLineSplitter_Run_EmptyLines(t *testing.T) {
 	splitter := NewLineSplitter()
-	in := make(chan string, 1)
-	in <- "hello\n\nworld"
+	in := make(chan Document, 1)
+	in <- Document{Content: "hello\n\nworld", Source: "file://test.md"}
 	close(in)
 
 	out := splitter.Run(context.Background(), in)
@@ -43,8 +43,8 @@ func TestLineSplitter_Run_EmptyLines(t *testing.T) {
 
 func TestLineSplitter_Run_EmptyString(t *testing.T) {
 	splitter := NewLineSplitter()
-	in := make(chan string, 1)
-	in <- ""
+	in := make(chan Document, 1)
+	in <- Document{Content: "", Source: "file://test.md"}
 	close(in)
 
 	out := splitter.Run(context.Background(), in)

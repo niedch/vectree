@@ -85,6 +85,7 @@ func convertEmbedderOutToChunks(anyArr []*EmbedderOut) (int, []store.Chunk) {
 			Level:      embedderOut.Level,
 			ParentId:   embedderOut.ParentId,
 			DocumentId: embedderOut.DocumentId,
+			Source:     embedderOut.Source,
 		}
 	}
 

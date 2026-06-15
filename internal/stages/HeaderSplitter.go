@@ -20,15 +20,16 @@ func NewHeaderSplitter() *HeaderSplitter {
 	return &HeaderSplitter{}
 }
 
-// Run implements the Stage interface. It splits the input string by markdown headers
+// Run implements the Stage interface. It splits the input document by markdown headers
 // and sends each chunk to the output channel. This implementation is optimized for memory efficiency.
-func (s *HeaderSplitter) Run(ctx context.Context, in <-chan string) <-chan Section {
+func (s *HeaderSplitter) Run(ctx context.Context, in <-chan Document) <-chan Section {
 	out := make(chan Section)
 
 	go func() {
 		defer close(out)
 
-		for content := range in {
+		for doc := range in {
+			content := doc.Content
 			if content == "" {
 				continue
 			}
@@ -41,7 +42,7 @@ func (s *HeaderSplitter) Run(ctx context.Context, in <-chan string) <-chan Secti
 			// If there are no headers, send the whole content.
 			if len(headerIndices) == 0 {
 				select {
-				case out <- Section{Text: content, Level: 0, DocumentId: documentId}:
+				case out <- Section{Text: content, Level: 0, DocumentId: documentId, Source: doc.Source}:
 				case <-ctx.Done():
 					return
 				}
@@ -55,7 +56,7 @@ func (s *HeaderSplitter) Run(ctx context.Context, in <-chan string) <-chan Secti
 					headerLine := content[headerIndices[i][0]:headerIndices[i][1]]
 					level := countHeaderLevel(headerLine)
 					select {
-					case out <- Section{Text: output, Level: level, DocumentId: documentId}:
+					case out <- Section{Text: output, Level: level, DocumentId: documentId, Source: doc.Source}:
 					case <-ctx.Done():
 						return
 					}
@@ -68,7 +69,7 @@ func (s *HeaderSplitter) Run(ctx context.Context, in <-chan string) <-chan Secti
 				headerLine := content[headerIndices[len(headerIndices)-1][0]:headerIndices[len(headerIndices)-1][1]]
 				level := countHeaderLevel(headerLine)
 				select {
-				case out <- Section{Text: output, Level: level, DocumentId: documentId}:
+				case out <- Section{Text: output, Level: level, DocumentId: documentId, Source: doc.Source}:
 				case <-ctx.Done():
 					return
 				}

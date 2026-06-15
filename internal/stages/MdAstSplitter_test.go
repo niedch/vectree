@@ -178,8 +178,8 @@ L4 content.`,
 			ctx := context.Background()
 
 			// Create input channel
-			in := make(chan string, 1)
-			in <- tt.input
+			in := make(chan Document, 1)
+			in <- Document{Content: tt.input, Source: "file://test.md"}
 			close(in)
 
 			// Run the splitter
@@ -200,6 +200,8 @@ L4 content.`,
 				assert.Equal(t, expected.Level, results[i].Level, "Output %d level mismatch", i)
 				// DocumentId should be set (non-empty)
 				assert.NotEmpty(t, results[i].DocumentId, "Output %d DocumentId should not be empty", i)
+				// Source should be propagated
+				assert.Equal(t, "file://test.md", results[i].Source, "Output %d Source mismatch", i)
 			}
 		})
 	}
@@ -210,10 +212,10 @@ func TestMdAstSplitter_MultipleDocuments(t *testing.T) {
 	ctx := context.Background()
 
 	// Create input channel with multiple documents
-	in := make(chan string, 3)
-	in <- "# Doc 1"
-	in <- "# Doc 2\n\nParagraph.\n\n## Subtitle\n\nMore content."
-	in <- "# Doc 3"
+	in := make(chan Document, 3)
+	in <- Document{Content: "# Doc 1", Source: "file://doc1.md"}
+	in <- Document{Content: "# Doc 2\n\nParagraph.\n\n## Subtitle\n\nMore content.", Source: "file://doc2.md"}
+	in <- Document{Content: "# Doc 3", Source: "file://doc3.md"}
 	close(in)
 
 	// Run the splitter
@@ -262,12 +264,12 @@ func TestMdAstSplitter_ContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Create input channel with multiple documents
-	in := make(chan string)
+	in := make(chan Document)
 	go func() {
 		defer close(in)
 		for range 1000 {
 			select {
-			case in <- "# Heading":
+			case in <- Document{Content: "# Heading", Source: "file://test.md"}:
 			case <-ctx.Done():
 				return
 			}
@@ -301,7 +303,7 @@ func TestMdAstSplitter_EmptyInput(t *testing.T) {
 	ctx := context.Background()
 
 	// Create empty input channel
-	in := make(chan string)
+	in := make(chan Document)
 	close(in)
 
 	// Run the splitter

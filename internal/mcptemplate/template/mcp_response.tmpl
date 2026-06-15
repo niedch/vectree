@@ -10,6 +10,7 @@
 - **Document ID:** {{ $doc.Document.Id }}
 - **Level:** {{ $doc.Document.Level }}
 - **Parent ID:** {{ if $doc.Document.ParentId }}{{ deref $doc.Document.ParentId }} _(Use `get-parent-context` tool with document-id={{ $doc.Document.Id }} for broader context)_{{ else }}None (root document){{ end }}
+- **Source:** {{ $doc.Document.Source }}
 
 **Content:**
 

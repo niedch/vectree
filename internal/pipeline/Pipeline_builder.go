@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/niedch/vectree/internal/conf"
 	"github.com/niedch/vectree/internal/stages"
@@ -15,8 +16,8 @@ func NewPipelineBuilder(cfg *conf.Config) *PipelineBuilder {
 	return &PipelineBuilder{cfg: cfg}
 }
 
-func (b *PipelineBuilder) BuildChunking() stages.Stage[string, stages.Section] {
-	var splitter stages.Stage[string, stages.Section]
+func (b *PipelineBuilder) BuildChunking() stages.Stage[stages.Document, stages.Section] {
+	var splitter stages.Stage[stages.Document, stages.Section]
 	switch b.cfg.Chunking.Strategy {
 	case conf.HEADER_STRATEGY:
 		splitter = stages.NewHeaderSplitter()
@@ -74,9 +75,22 @@ func BuildMarkdownPipeline(cfg *conf.MarkdownSourceConfig) *Pipeline {
 }
 
 func BuildGithubPipeline(cfg *conf.GithubSourceConfig) *Pipeline {
+	repoURL := strings.TrimSuffix(cfg.Repo, ".git")
+	if !strings.HasPrefix(repoURL, "https://") && !strings.HasPrefix(repoURL, "http://") {
+		repoURL = "https://" + repoURL
+	}
+	branch := cfg.Branch
+	if branch == "" {
+		branch = "HEAD"
+	}
+	sourcePrefix := repoURL + "/blob/" + branch + "/"
+	if cfg.Subdir != "" {
+		sourcePrefix += cfg.Subdir + "/"
+	}
+
 	p := NewPipeline()
 	p.AddStage(TypedStage(stages.NewGitHubCloner(cfg.Name, cfg.Repo, cfg.Branch, cfg.Token, cfg.Subdir)))
-	p.AddStage(TypedStage(stages.NewDirLoader("")))
+	p.AddStage(TypedStage(stages.NewDirLoaderWithSource("", sourcePrefix)))
 	p.AddStage(TypedStage(stages.NewFileLoader(cfg.Name)))
 	return p
 }
