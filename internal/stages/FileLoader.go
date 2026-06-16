@@ -8,23 +8,22 @@ import (
 
 type FileLoader struct {
 	sourceName string
-	dirPath    string
 }
 
 func NewFileLoader(sourceName string) *FileLoader {
 	return &FileLoader{sourceName: sourceName}
 }
 
-func (l FileLoader) Run(ctx context.Context, in <-chan string) <-chan string {
-	out := make(chan string)
+func (l FileLoader) Run(ctx context.Context, in <-chan FileRef) <-chan Document {
+	out := make(chan Document)
 
 	go func() {
 		defer close(out)
 		fileCount := 0
 		var totalSize uint64 = 0
 
-		for filePath := range in {
-			data, err := os.ReadFile(filePath)
+		for ref := range in {
+			data, err := os.ReadFile(ref.Path)
 			if err != nil {
 				return
 			}
@@ -37,7 +36,7 @@ func (l FileLoader) Run(ctx context.Context, in <-chan string) <-chan string {
 			totalSize += uint64(len(data))
 
 			select {
-			case out <- string(data):
+			case out <- Document{Content: string(data), Source: ref.Source}:
 			case <-ctx.Done():
 				return
 			}

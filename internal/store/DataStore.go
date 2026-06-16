@@ -13,6 +13,7 @@ type Chunk struct {
 	Level      int
 	ParentId   *int   // Reference to parent document ID
 	DocumentId string // Identifier to track which source document this chunk belongs to
+	Source     string // Source URI of the document (file://, https://, etc.)
 }
 
 type Datastore interface {

@@ -13,6 +13,7 @@ type EmbedderOut struct {
 	Level      int
 	ParentId   *int
 	DocumentId string
+	Source     string
 }
 
 type Embedder struct {
@@ -50,6 +51,7 @@ func (e Embedder) Run(ctx context.Context, in <-chan []Section) <-chan *Embedder
 				Level:      section.Level,
 				ParentId:   section.ParentId,
 				DocumentId: section.DocumentId,
+				Source:     section.Source,
 			}
 
 			select {

@@ -11,19 +11,19 @@ func NewNodeModulesFilter() *NodeModulesFilter {
 	return &NodeModulesFilter{}
 }
 
-func (l NodeModulesFilter) Run(ctx context.Context, in <-chan string) <-chan string {
-	out := make(chan string)
+func (l NodeModulesFilter) Run(ctx context.Context, in <-chan FileRef) <-chan FileRef {
+	out := make(chan FileRef)
 
 	go func() {
 		defer close(out)
 
-		for filePath := range in {
-			if strings.Contains(filePath, "node_modules") {
+		for ref := range in {
+			if strings.Contains(ref.Path, "node_modules") {
 				continue
 			}
 
 			select {
-			case out <- filePath:
+			case out <- ref:
 			case <-ctx.Done():
 				return
 			}

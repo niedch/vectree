@@ -49,8 +49,8 @@ Text in section 1.`},
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := t.Context()
 
-			in := make(chan string, 1)
-			in <- tt.input
+			in := make(chan Document, 1)
+			in <- Document{Content: tt.input, Source: "file://test.md"}
 			close(in)
 
 			splitter := NewHeaderSplitter()

@@ -9,33 +9,33 @@ import (
 func TestIndexFileFilter(t *testing.T) {
 	tests := []struct {
 		name     string
-		input    []string
-		expected []string
+		input    []FileRef
+		expected []FileRef
 	}{
 		{
 			name:     "No ignored files",
-			input:    []string{"/path/to/file1.md", "/path/to/file2.go"},
-			expected: []string{"/path/to/file1.md", "/path/to/file2.go"},
+			input:    makeFileRefs("/path/to/file1.md", "/path/to/file2.go"),
+			expected: makeFileRefs("/path/to/file1.md", "/path/to/file2.go"),
 		},
 		{
 			name:     "One ignored file",
-			input:    []string{"/path/to/file1.md", "/path/to/!ignore.txt"},
-			expected: []string{"/path/to/file1.md"},
+			input:    makeFileRefs("/path/to/file1.md", "/path/to/!ignore.txt"),
+			expected: makeFileRefs("/path/to/file1.md"),
 		},
 		{
 			name:     "All ignored files",
-			input:    []string{"/path/to/!file1.md", "/path/to/!file2.go"},
+			input:    makeFileRefs("/path/to/!file1.md", "/path/to/!file2.go"),
 			expected: nil,
 		},
 		{
 			name:     "Empty input",
-			input:    []string{},
+			input:    makeFileRefs(),
 			expected: nil,
 		},
 		{
 			name:     "Mixed valid and invalid files",
-			input:    []string{"file1", "file!2", "file3", "!file4"},
-			expected: []string{"file1", "file3"},
+			input:    makeFileRefs("file1", "file!2", "file3", "!file4"),
+			expected: makeFileRefs("file1", "file3"),
 		},
 	}
 
@@ -43,16 +43,16 @@ func TestIndexFileFilter(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := t.Context()
 
-			in := make(chan string, len(tt.input))
-			for _, path := range tt.input {
-				in <- path
+			in := make(chan FileRef, len(tt.input))
+			for _, ref := range tt.input {
+				in <- ref
 			}
 			close(in)
 
 			filter := NewIndexFileFilter()
 			out := filter.Run(ctx, in)
 
-			var results []string
+			var results []FileRef
 			for res := range out {
 				results = append(results, res)
 			}

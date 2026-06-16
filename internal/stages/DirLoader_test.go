@@ -34,19 +34,19 @@ func TestDirLoader_Run(t *testing.T) {
 	in := make(chan any)
 	out := loader.Run(context.Background(), in)
 
-	var foundFiles []string
+	var foundFiles []FileRef
 	for file := range out {
 		foundFiles = append(foundFiles, file)
 	}
 
-	expectedFiles := []string{
-		filepath.Join(tempDir, "file1.md"),
-		filepath.Join(tempDir, "sub", "file3.md"),
+	expectedFiles := []FileRef{
+		{Path: filepath.Join(tempDir, "file1.md"), Source: "file://" + filepath.Join(tempDir, "file1.md")},
+		{Path: filepath.Join(tempDir, "sub", "file3.md"), Source: "file://" + filepath.Join(tempDir, "sub", "file3.md")},
 	}
 
 	// Sort slices for consistent comparison
-	sort.Strings(foundFiles)
-	sort.Strings(expectedFiles)
+	sort.Slice(foundFiles, func(i, j int) bool { return foundFiles[i].Path < foundFiles[j].Path })
+	sort.Slice(expectedFiles, func(i, j int) bool { return expectedFiles[i].Path < expectedFiles[j].Path })
 
 	assert.Equal(t, expectedFiles, foundFiles)
 }
@@ -56,7 +56,7 @@ func TestDirLoader_Run_NonExistentDir(t *testing.T) {
 	in := make(chan any)
 	out := loader.Run(context.Background(), in)
 
-	var foundFiles []string
+	var foundFiles []FileRef
 	for file := range out {
 		foundFiles = append(foundFiles, file)
 	}
@@ -80,7 +80,7 @@ func TestDirLoader_Run_ContextCancellation(t *testing.T) {
 	// Cancel the context immediately
 	cancel()
 
-	var foundFiles []string
+	var foundFiles []FileRef
 	for file := range out {
 		foundFiles = append(foundFiles, file)
 	}

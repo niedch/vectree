@@ -15,6 +15,7 @@ type Section struct {
 	Level      int
 	ParentId   *int
 	DocumentId string
+	Source     string
 }
 
 type MdAstSplitter struct {
@@ -25,19 +26,21 @@ func NewMdAstSplitter() *MdAstSplitter {
 	return &MdAstSplitter{workers: runtime.NumCPU()}
 }
 
-func (s MdAstSplitter) Run(ctx context.Context, in <-chan string) <-chan Section {
-	return WorkerPoolStage(ctx, in, s.workers, s.processDocument)
+func (s MdAstSplitter) Run(ctx context.Context, in <-chan Document) <-chan Section {
+	return WorkerPoolStage(ctx, in, s.workers, func(ctx context.Context, doc Document, out chan<- Section) error {
+		return s.processDocument(ctx, doc, out)
+	})
 }
 
-func (s MdAstSplitter) processDocument(ctx context.Context, doc string, out chan<- Section) error {
-	hash := sha256.Sum256([]byte(doc))
+func (s MdAstSplitter) processDocument(ctx context.Context, doc Document, out chan<- Section) error {
+	hash := sha256.Sum256([]byte(doc.Content))
 	documentId := hex.EncodeToString(hash[:8])
 
-	docNode := mdast.ParseMarkdown(doc)
+	docNode := mdast.ParseMarkdown(doc.Content)
 	children := docNode.Children()
 
 	var sb strings.Builder
-	sb.Grow(len(doc))
+	sb.Grow(len(doc.Content))
 
 	for i := range children {
 		heading, isHeading := children[i].(*mdast.HeadingNode)
@@ -71,6 +74,7 @@ func (s MdAstSplitter) processDocument(ctx context.Context, doc string, out chan
 			Text:       sectionText,
 			Level:      heading.Level,
 			DocumentId: documentId,
+			Source:     doc.Source,
 		}:
 		case <-ctx.Done():
 			return ctx.Err()

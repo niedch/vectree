@@ -18,14 +18,15 @@ func TestWebCrawler_SinglePage(t *testing.T) {
 	ctx := context.Background()
 	out := crawler.Run(ctx, nil)
 
-	var results []string
-	for content := range out {
-		results = append(results, content)
+	var results []Document
+	for doc := range out {
+		results = append(results, doc)
 	}
 
 	assert.Len(t, results, 1)
-	assert.Contains(t, results[0], "# Hello")
-	assert.Contains(t, results[0], "World")
+	assert.Contains(t, results[0].Content, "# Hello")
+	assert.Contains(t, results[0].Content, "World")
+	assert.Equal(t, server.URL+"/simple.html", results[0].Source)
 }
 
 func TestWebCrawler_DepthTwo(t *testing.T) {
@@ -36,14 +37,14 @@ func TestWebCrawler_DepthTwo(t *testing.T) {
 	ctx := context.Background()
 	out := crawler.Run(ctx, nil)
 
-	var results []string
-	for content := range out {
-		results = append(results, content)
+	var results []Document
+	for doc := range out {
+		results = append(results, doc)
 	}
 
 	assert.Len(t, results, 2)
-	assert.Contains(t, results[0], "Page 1")
-	assert.Contains(t, results[1], "Page 2")
+	assert.Contains(t, results[0].Content, "Page 1")
+	assert.Contains(t, results[1].Content, "Page 2")
 }
 
 func TestWebCrawler_CustomSelector(t *testing.T) {
@@ -54,14 +55,14 @@ func TestWebCrawler_CustomSelector(t *testing.T) {
 	ctx := context.Background()
 	out := crawler.Run(ctx, nil)
 
-	var results []string
-	for content := range out {
-		results = append(results, content)
+	var results []Document
+	for doc := range out {
+		results = append(results, doc)
 	}
 
 	assert.Len(t, results, 1)
-	assert.Contains(t, results[0], "Title")
-	assert.NotContains(t, results[0], "Sidebar")
+	assert.Contains(t, results[0].Content, "Title")
+	assert.NotContains(t, results[0].Content, "Sidebar")
 }
 
 func TestWebCrawler_NoMatch(t *testing.T) {
@@ -72,9 +73,9 @@ func TestWebCrawler_NoMatch(t *testing.T) {
 	ctx := context.Background()
 	out := crawler.Run(ctx, nil)
 
-	var results []string
-	for content := range out {
-		results = append(results, content)
+	var results []Document
+	for doc := range out {
+		results = append(results, doc)
 	}
 
 	assert.Empty(t, results)
@@ -88,13 +89,13 @@ func TestWebCrawler_ExternalLinksIgnored(t *testing.T) {
 	ctx := context.Background()
 	out := crawler.Run(ctx, nil)
 
-	var results []string
-	for content := range out {
-		results = append(results, content)
+	var results []Document
+	for doc := range out {
+		results = append(results, doc)
 	}
 
 	assert.Len(t, results, 1)
-	assert.Contains(t, results[0], "Home")
+	assert.Contains(t, results[0].Content, "Home")
 }
 
 func TestWebCrawler_ContextCancellation(t *testing.T) {
@@ -106,9 +107,9 @@ func TestWebCrawler_ContextCancellation(t *testing.T) {
 	cancel()
 
 	out := crawler.Run(ctx, nil)
-	var results []string
-	for content := range out {
-		results = append(results, content)
+	var results []Document
+	for doc := range out {
+		results = append(results, doc)
 	}
 
 	assert.Empty(t, results)
@@ -122,9 +123,9 @@ func TestWebCrawler_EmptyContent(t *testing.T) {
 	ctx := context.Background()
 	out := crawler.Run(ctx, nil)
 
-	var results []string
-	for content := range out {
-		results = append(results, content)
+	var results []Document
+	for doc := range out {
+		results = append(results, doc)
 	}
 
 	assert.Empty(t, results)

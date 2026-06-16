@@ -13,15 +13,15 @@ func NewLineSplitter() *LineSplitter {
 	return &LineSplitter{}
 }
 
-func (s LineSplitter) Run(ctx context.Context, in <-chan string) <-chan Section {
+func (s LineSplitter) Run(ctx context.Context, in <-chan Document) <-chan Section {
 	out := make(chan Section)
 	go func() {
 		defer close(out)
 		for doc := range in {
-			hash := sha256.Sum256([]byte(doc))
+			hash := sha256.Sum256([]byte(doc.Content))
 			documentId := hex.EncodeToString(hash[:8])
 
-			lines := strings.SplitSeq(doc, "\n")
+			lines := strings.SplitSeq(doc.Content, "\n")
 
 			for line := range lines {
 				if len(line) == 0 {
@@ -29,7 +29,7 @@ func (s LineSplitter) Run(ctx context.Context, in <-chan string) <-chan Section 
 				}
 
 				select {
-				case out <- Section{Text: line, Level: 0, DocumentId: documentId}:
+				case out <- Section{Text: line, Level: 0, DocumentId: documentId, Source: doc.Source}:
 				case <-ctx.Done():
 					return
 				}
