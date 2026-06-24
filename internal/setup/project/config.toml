@@ -1,0 +1,40 @@
+
+#############
+# Change me #
+#############
+[sources.vectree-docs]
+type = "github"
+repo = "https://github.com/niedch/vectree"
+
+# Can be added if needed
+# [sources.gemini-docs]
+# type = "http"
+# url = "https://ai.google.dev/gemini-api/docs"
+# max_depth = 3
+# selector = ".devsite-article-body"
+#
+# [sources.obsidian-vault]
+# type = "markdown"
+# location = "../obsidian-vault/"
+
+[database]
+connection_string = "kownledgebase.db"
+
+[chunking]
+strategy = "mdast"
+
+[pipeline]
+embedder_batch_size = 64
+embedder_workers = 8
+store_batch_size = 64
+crawler_workers = 8
+
+[ai]
+provider = "gemini"
+embedding_model = "gemini-embedding-001"
+
+[retrieval]
+similarity_results = 3
+
+[prompts]
+path = "./prompts"
